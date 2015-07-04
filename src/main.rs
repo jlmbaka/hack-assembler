@@ -32,32 +32,10 @@ impl Parser {
 		Parser { input_lines: lines, current_command: String::new()}
 	}
 
-	/// Are there any more commands in the input?
-	///
-	/// NOTE: Not needed since input_lines is an iterator
-	fn has_more_commands(&self) -> bool {
-		false
-	}
-
-	/// Reads the next command from the input and makes it the current command.
-	///
-	/// Should be called only if hasMoreCommands() is true.
-	/// Initally there is no current command
-	///
-	fn advance(&mut self) {
-		// Lines.next() -> Option<Result<String>>. That is why we have two unwrap()
-		let s = self.input_lines.next().unwrap().unwrap();
-		let s_trimmed = s.trim();
-		if s_trimmed.starts_with("//") {
-			println!("{0}", s_trimmed);			
-		} else {
-			println!("No comment");
-		}
-	}
-
-
 	/// Encapsulates has_more_command and avance method from the proposed API.
 	///
+	///		Are there any more commands in the input?
+	///			Reads the next command from the input and makes it the current command
 	fn parse(mut self) {
 		for line in self.input_lines { // has_more_commands + advance
 			// println!("{0}", line.unwrap().trim());
