@@ -1,15 +1,20 @@
 use std::path::Path;
 use std::fs::File;
 use std::error::Error;
-use std::io::prelude::*;
 use std::env;
+use std::io::BufReader;
+use std::io::BufRead;
+use std::io::Lines;
 
 
 struct Parser {
-	input_file: File,
+	input_lines: Lines<BufReader<File>>,
 }
 
 impl Parser {
+	///
+	/// Opens the input file/stream and gets ready to parse it.
+	///
 	fn new(filename: &str) -> Parser {
 		let path = Path::new(filename);
 		let file = match File::open(&path) {
@@ -17,7 +22,15 @@ impl Parser {
 			Ok(file) => file,
 		};
 
-		Parser { input_file: file}
+		let lines = BufReader::new(file).lines(); // iterator
+		Parser { input_lines: lines}
+	}
+
+	///
+	/// Are there any more commands in the input?
+	/// NOTE: Not needed since we input_lines is an iterator
+	fn has_more_commands(&self) -> bool {
+		false
 	}
 }
 
