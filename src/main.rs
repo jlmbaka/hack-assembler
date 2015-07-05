@@ -43,7 +43,14 @@ impl Parser {
 		loop {
 			match self.input_lines.next() {
 				Some(line) => {
-					self.current_command = line.unwrap().trim().to_string();
+					let content = line.unwrap().trim().to_string();
+
+					// Ignore comments and empty lines
+					if content.starts_with("//") || content == "\n" || content == "" {
+						continue
+					}
+
+					self.current_command = content;
 					match self.command_type() {
 						ACommand => {println!("ACommand: {0}", self.current_command);},
 						CCommand => {println!("CCommand: {0}", self.current_command);},
@@ -61,7 +68,12 @@ impl Parser {
 	/// * CCommand: For dest=comp;jump
 	/// * LCommand: Pseudo-Command. for (xxx) where xxx is a symbol
 	fn command_type(&self) -> CommandType {
-		ACommand
+		if self.current_command.starts_with("@") {
+			return ACommand
+		} else if self.current_command.starts_with("(") {
+			return LCommand
+		}
+		CCommand
 	}
 }
 
