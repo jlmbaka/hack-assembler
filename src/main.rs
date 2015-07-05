@@ -52,9 +52,22 @@ impl Parser {
 
 					self.current_command = content;
 					match self.command_type() {
-						ACommand => {println!("ACommand: {0}", self.current_command);},
-						CCommand => {println!("CCommand: {0}", self.current_command);},
-						LCommand => {println!("LCommand: {0}", self.current_command);},
+						ACommand => {
+							println!("ACommand: {0}", self.current_command);
+							println!("\tsymbol: {0}", self.symbol());
+						},
+						CCommand => {
+							println!("CCommand: {0}", self.current_command);
+							println!("\tdest: {0}", self.dest());
+							println!("\tcomp: {0}", self.comp());
+							println!("\tjump: {0}", self.jump());
+
+						},
+						LCommand => {
+							println!("LCommand: {0}", self.current_command);
+							println!("\tsymbol: {0}", self.symbol());
+
+						},
 					}
 				},
 				None => break,
@@ -66,7 +79,7 @@ impl Parser {
 	///
 	/// * ACommand: For @xxx where xxx is either a symbol or a decimal number
 	/// * CCommand: For dest=comp;jump
-	/// * LCommand: Pseudo-Command. for (xxx) where xxx is a symbol
+	/// * LCommand: Pseudo-Command. For (xxx) where xxx is a symbol
 	fn command_type(&self) -> CommandType {
 		if self.current_command.starts_with("@") {
 			return ACommand
@@ -75,7 +88,79 @@ impl Parser {
 		}
 		CCommand
 	}
+
+	/// Returns the symbol or decimal xxx of the current command @xxx or (xxx).
+	///
+	/// Should be called only when command_type() is ACommand or LCommand.
+	fn symbol(&self) -> String {
+		let pattern: &[_] = &['(', ')', '@'];
+		self.current_command.trim_matches(pattern).to_string()
+	}
+
+	/// Returns the dest mnemonic in the current CCommand. dest=comp;jump
+	///  
+	///(8 posibilities.)
+	/// Should only be called when cammand_type() is CCommand.
+	fn dest(&self) -> String {
+		// dest or jump field may be empy
+		// if dest is empty, the '=' is omitted.
+		// if jump is empty, the ';' is omitted.
+		match self.current_command.contains('=') {
+			true => {
+				let v: Vec<&str> = self.current_command.split('=').collect();
+				return v[0].to_string()
+			},
+			false => "null".to_string(),
+		}
+	}
+
+	// /// Returns the comp mnemonic in the current CCommand. dest=comp;jump
+	// ///
+	// /// 28 possibilities.
+	// /// Should only be called when cammand_type() is CCommand.
+	fn comp(&self) -> String {
+		match self.current_command.contains('=') {
+			true => {
+				match self.current_command.contains(';') {
+					true => { // dest=comp;jump	
+						let v: Vec<&str> = self.current_command.split(|c: char| c == ';' || c == '=' ).collect();
+						v[1].to_string()					
+					},
+					false => { // dest=comp
+						let v: Vec<&str> = self.current_command.split('=').collect();
+						v[1].to_string()
+					}
+				}
+			},
+			false => {
+				match self.current_command.contains(';') {
+					true => { // comp;jump
+						let v: Vec<&str> = self.current_command.split(';').collect();
+						v[0].to_string()
+					},
+					false => { // comp
+						self.current_command.clone()
+					},
+				}
+			}
+		}
+	}
+
+	/// Returns the jump mnemonic in the current CCommand. dest=com;jump
+	///
+	/// 8-possibilities.
+	/// Should only be called when cammand_type() is CCommand.
+	fn jump(&self) -> String {
+		match self.current_command.contains(';') {
+			true => {
+				let v: Vec<&str> = self.current_command.split(';').collect();
+				return v[0].to_string()
+			},
+			false => "null".to_string(),
+		}	
+	}
 }
+
 
 fn main() {
 	let args: Vec<String> = env::args().collect();
