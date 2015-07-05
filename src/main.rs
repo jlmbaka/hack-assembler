@@ -45,12 +45,26 @@ impl Parser {
 				Some(line) => {
 					let content = line.unwrap().trim().to_string();
 
-					// Ignore comments and empty lines
+					// ignore line comments and empty lines
 					if content.starts_with("//") || content == "\n" || content == "" {
 						continue
 					}
 
-					self.current_command = content;
+
+					// remove inline commnents
+					let mut content_without_inline = String::new();
+					if content.contains("//") {
+						let v: Vec<&str> = content.split("//").collect();
+						content_without_inline = v[0].trim().to_string();
+					}
+
+					// decide whether to use content_with_inline or content
+					if content_without_inline != String::new() {
+						self.current_command = content_without_inline;
+					} else {
+						self.current_command = content;
+					}
+
 					match self.command_type() {
 						ACommand => {
 							println!("ACommand: {0}", self.current_command);
@@ -61,12 +75,10 @@ impl Parser {
 							println!("\tdest: {0}", self.dest());
 							println!("\tcomp: {0}", self.comp());
 							println!("\tjump: {0}", self.jump());
-
 						},
 						LCommand => {
 							println!("LCommand: {0}", self.current_command);
 							println!("\tsymbol: {0}", self.symbol());
-
 						},
 					}
 				},
@@ -154,7 +166,7 @@ impl Parser {
 		match self.current_command.contains(';') {
 			true => {
 				let v: Vec<&str> = self.current_command.split(';').collect();
-				return v[0].to_string()
+				return v[1].to_string()
 			},
 			false => "null".to_string(),
 		}	
