@@ -6,6 +6,7 @@ use std::io::BufReader;
 use std::io::BufRead;
 use std::io::Lines;
 use std::collections::HashMap;
+use std::fmt;
 
 use CommandType::{ACommand, CCommand, LCommand};
 
@@ -180,19 +181,31 @@ impl Parser {
 /// Translate Hack assembly language mnemonic into binary codes
 struct Code {
 	c_instr: CInstruction,
-};
+}
 
 impl Code {
 	fn new() -> Code {
 		Code {
-			c_instr = CInstruction::new(),
+			c_instr: CInstruction::new(),
 		}
+	}
+
+	/// Reset all the bits to 0
+	fn clear(mut self) {
+		self.c_instr = CInstruction::new();
+	}
+
+	/// Gives the binary representation of the current instruction as string.
+	///
+	/// 111ac1c2c3c4c5c6d1d2d3j1j2j3
+	fn format(self) {
+		println!("{0}", self.c_instr);
 	}
 
 	/// Returns the binary code of the dest mnemonic
 	///
 	/// returns 3 bits
-	fn dest(mnemonic: &str) -> CInstruction {
+	fn dest(mut self, mnemonic: &str) -> CInstruction {
 		match mnemonic {
 			"null" 	=> {},
 			"M"		=> {
@@ -229,8 +242,7 @@ impl Code {
 	/// Returns the binary code of the comp mnemonic
 	///
 	/// returns 7 bits
-	fn comp(mnemonic: &str) -> CInstruction {
-		let mut self.c_instr = CInstruction::new();
+	fn comp(mut self, mnemonic: &str) -> CInstruction {
 		match mnemonic {
 			"0" => {
 				self.c_instr.c1 = 1;
@@ -393,8 +405,7 @@ impl Code {
 	/// Returns the binary code of the jump mnemonic
 	///
 	/// returns 3 bits
-	fn jump(mnemonic: &str) -> CInstruction {
-		let mut self.c_instr = CInstruction::new();
+	fn jump(mut self, mnemonic: &str) -> CInstruction {
 		match mnemonic {
 			"null" 	=> {},
 			"JGT"	=> {
@@ -477,6 +488,16 @@ impl CInstruction {
 			j2: 0,
 			j3: 0,
 		}
+	}
+}
+
+impl fmt::Display for CInstruction {
+	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+		write!(f, "111{0}{1}{2}{3}{4}{5}{6}{7}{8}{9}{10}{11}{12}",
+			self.a, 
+			self.c1, self.c2, self.c3,self.c4,self.c5, self.c6,
+			self.d1, self.d2, self.d3,
+			self.j1, self.j2, self.j3)
 	}
 }
 
