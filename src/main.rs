@@ -212,18 +212,39 @@ impl Code {
 	/// Returns the binary code of the jump mnemonic
 	///
 	/// returns 3 bits
-	fn jump(mnemonic: &str) -> u16 {
+	fn jump(mnemonic: &str) -> CInstruction {
+		let mut c_instr = CInstruction::new();
 		match mnemonic {
-			"null" 	=> 0x00,
-			"JGT"	=> 0x01,
-			"JEQ"	=> 0x02,
-			"JGE"	=> 0x03,
-			"JLT"	=> 0x04,
-			"JNE"	=> 0x05,
-			"JLE"	=> 0x06,
-			"JMP"	=> 0x07,
-			_		=> 0x08,
+			"null" 	=> ,
+			"JGT"	=> {
+				c_instr.j3 = 1;
+			},
+			"JEQ"	=> {
+				c_instr.j2 = 1;
+			},
+			"JGE"	=> {
+				c_instr.j3 = 1;
+				c_instr.j2 = 1;
+			},
+			"JLT"	=> {
+				c_instr.j1 = 1;
+			},
+			"JNE"	=> {
+				c_instr.j1 = 1;
+				c_instr.j3 = 1;
+			},
+			"JLE"	=> {
+				c_instr.j1 = 1;
+				c_instr.j2 = 1;
+			},
+			"JMP"	=> {
+				c_instr.j1 = 1;
+				c_instr.j2 = 1;
+				c_instr.j3 = 1;
+			},
+			_		=> ,
 		}
+		c_instr
 	}
 }
 
