@@ -173,48 +173,6 @@ impl Parser {
 	}
 }
 
-/// Translate Hack assembly language mnemonic into binary codes
-struct Code {
-    Field: typ
-}
-
-impl Code {
-	fn new() -> Code {
-		Code {}
-	}
-
-	/// Returns the binary code of the dest mnemonic
-	///
-	/// returns 3 bits
-	fn dest(mnemonic: &str) -> u8 {
-		match mnemonic {
-			"null" 	=> 0x00,
-			"M"		=> 0x01,
-			"D"		=> 0x02,
-			"MD"	=> 0x03,
-			"A"		=> 0x04,
-			"AM"	=> 0x05,
-			"AD"	=> 0x06,
-			"AMD"	=> 0x07,
-			_		=> 0x08,
-		}
-	}
-
-	/// Returns the binary code of the comp mnemonic
-	///
-	/// returns 7 bits
-	fn comp(mnemonic: &str) -> u8 {
-
-	}
-
-	/// Returns the binary code of the jump mnemonic
-	///
-	/// returns 3 bits
-	fn jump(mnemonic: &str) -> u8 {
-
-	}
-}
-
 fn main() {
 	let args: Vec<String> = env::args().collect();
 	if args.len() != 2 {
