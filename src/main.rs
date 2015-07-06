@@ -35,13 +35,15 @@ impl Parser {
 		}
 	}
 
-	/// Encapsulates has_more_command and avance method from the proposed API.
+	/// Contains the main program logc
+	///
+	/// TODO Consider moving it to a separte stand alone module.
 	///
 	///		Are there any more commands in the input?
 	///			Reads the next command from the input and makes it the current command
 	fn parse(&mut self) {
 		loop {
-			match self.input_lines.next() {
+			match self.input_lines.next() { 
 				Some(line) => {
 					let content = line.unwrap().trim().to_string();
 
@@ -170,6 +172,58 @@ impl Parser {
 			},
 			false => "null".to_string(),
 		}	
+	}
+}
+
+/// Translate Hack assembly language mnemonic into binary codes
+struct Code;
+
+impl Code {
+	fn new() -> Code {
+		Code
+	}
+
+	/// Returns the binary code of the dest mnemonic
+	///
+	/// returns 3 bits
+	fn dest(mnemonic: &str) -> u8 {
+		let instr: u16 = 0;
+		let mask: u16 = 
+		match mnemonic {
+			"null" 	=> 0x00,
+			"M"		=> 0x01,
+			"D"		=> 0x02,
+			"MD"	=> 0x03,
+			"A"		=> 0x04,
+			"AM"	=> 0x05,
+			"AD"	=> 0x06,
+			"AMD"	=> 0x07,
+			_		=> 0x08,
+		}
+	}
+
+	/// Returns the binary code of the comp mnemonic
+	///
+	/// returns 7 bits
+	// fn comp(mnemonic: &str) -> u8 {
+
+	// }
+
+	/// Returns the binary code of the jump mnemonic
+	///
+	/// returns 3 bits
+	fn jump(mnemonic: &str) -> u8 {
+		match mnemonic {
+			"null" 	=> 0x00,
+			"JGT"	=> 0x01,
+			"JEQ"	=> 0x02,
+			"JGE"	=> 0x03,
+			"JLT"	=> 0x04,
+			"JNE"	=> 0x05,
+			"JLE"	=> 0x06,
+			"JMP"	=> 0x07,
+			_		=> 0x08,
+		}
 	}
 }
 
