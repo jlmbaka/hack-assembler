@@ -5,8 +5,10 @@ use std::env;
 use std::io::BufReader;
 use std::io::BufRead;
 use std::io::Lines;
+use std::collections::HashMap;
 
 use CommandType::{ACommand, CCommand, LCommand};
+
 
 enum CommandType {
 	ACommand,
@@ -187,8 +189,6 @@ impl Code {
 	///
 	/// returns 3 bits
 	fn dest(mnemonic: &str) -> u8 {
-		let instr: u16 = 0;
-		let mask: u16 = 
 		match mnemonic {
 			"null" 	=> 0x00,
 			"M"		=> 0x01,
@@ -212,7 +212,7 @@ impl Code {
 	/// Returns the binary code of the jump mnemonic
 	///
 	/// returns 3 bits
-	fn jump(mnemonic: &str) -> u8 {
+	fn jump(mnemonic: &str) -> u16 {
 		match mnemonic {
 			"null" 	=> 0x00,
 			"JGT"	=> 0x01,
@@ -227,10 +227,62 @@ impl Code {
 	}
 }
 
+/// Change the bits at indexes in index to values in dest
+///
+/// Takes a hashmap such as bit_index -> bit_value
+fn set_bits(mut word:i16, index_bitvalue: HashMap<i16, i16>) -> i16 {
+	for index in index_bitvalue.keys() {
+		let bit_value: i16 = match index_bitvalue.get(index) {
+			Some(value) => value.clone(),
+			None => 0,
+		};
+		word ^= (-bit_value ^ word) & (1i16 << index);
+	}
+	word
+}
+
+/// CInstruction bitfield
+struct CInstruction {
+	a: u8,
+	c1: u8,
+	c2: u8,
+	c3: u8,
+	c4: u8,
+	c5: u8,
+	c6: u8,
+	d1: u8,
+	d2: u8,
+	d3: u8,
+	j1: u8,
+	j2: u8,
+	j3: u8,
+}
+
+impl CInstruction {
+	fn new() -> CInstruction {
+		CInstruction {
+			a: 0,
+			c1: 0,
+			c2: 0,
+			c3: 0,
+			c4: 0,
+			c5: 0,
+			c6: 0,
+			d1: 0,
+			d2: 0,
+			d3: 0,
+			j1: 0,
+			j2: 0,
+			j3: 0,
+		}
+	}
+}
+
 fn main() {
 	let args: Vec<String> = env::args().collect();
 	if args.len() != 2 {
-		println!("HACK Assembler. Translates assembly (mnemonic) into binary machine code.\n\nUsage:\n\tassembler [PATH_TO_ASM_FILE]");
+		println!("HACK Assembler. Translates assembly (mnemonic) into binary 
+			machine code.\n\nUsage:\n\tassembler [PATH_TO_ASM_FILE]");
 		return;
 	}
 	let path_to_asm = &args[1];
