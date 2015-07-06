@@ -178,251 +178,254 @@ impl Parser {
 }
 
 /// Translate Hack assembly language mnemonic into binary codes
-struct Code;
+struct Code {
+	c_instr: CInstruction,
+};
 
 impl Code {
 	fn new() -> Code {
-		Code
+		Code {
+			c_instr = CInstruction::new(),
+		}
 	}
 
 	/// Returns the binary code of the dest mnemonic
 	///
 	/// returns 3 bits
 	fn dest(mnemonic: &str) -> CInstruction {
-		let mut c_instr = CInstruction::new();
 		match mnemonic {
 			"null" 	=> {},
 			"M"		=> {
-				c_instr.j3 = 1;
+				self.c_instr.j3 = 1;
 			},
 			"D"		=> {
-				c_instr.j2 = 1;
+				self.c_instr.j2 = 1;
 			},
 			"MD"	=> {
-				c_instr.j3 = 1;
-				c_instr.j2 = 1;
+				self.c_instr.j3 = 1;
+				self.c_instr.j2 = 1;
 			},
 			"A"		=> {
-				c_instr.j1 = 1;
+				self.c_instr.j1 = 1;
 			},
 			"AM"	=> { 
-				c_instr.j1 = 1;
-				c_instr.j3 = 1;
+				self.c_instr.j1 = 1;
+				self.c_instr.j3 = 1;
 			},
 			"AD"	=> {
-				c_instr.j1 = 1;
-				c_instr.j2 = 1;
+				self.c_instr.j1 = 1;
+				self.c_instr.j2 = 1;
 			},
 			"AMD"	=> {
-				c_instr.j1 = 1;
-				c_instr.j2 = 1;
-				c_instr.j3 = 1;
+				self.c_instr.j1 = 1;
+				self.c_instr.j2 = 1;
+				self.c_instr.j3 = 1;
 			},
 			_		=> {},
 		}
-		c_instr
+		self.c_instr
 	}
 
 	/// Returns the binary code of the comp mnemonic
 	///
 	/// returns 7 bits
 	fn comp(mnemonic: &str) -> CInstruction {
-		let mut c_instr = CInstruction::new();
+		let mut self.c_instr = CInstruction::new();
 		match mnemonic {
 			"0" => {
-				c_instr.c1 = 1;
-				c_instr.c2 = 0;
-				c_instr.c3 = 1;
-				c_instr.c4 = 0;
-				c_instr.c5 = 1;
-				c_instr.c6 = 0;
+				self.c_instr.c1 = 1;
+				self.c_instr.c2 = 0;
+				self.c_instr.c3 = 1;
+				self.c_instr.c4 = 0;
+				self.c_instr.c5 = 1;
+				self.c_instr.c6 = 0;
 			},
 			"1" => {
-				c_instr.c1 = 1;
-				c_instr.c2 = 1;
-				c_instr.c3 = 1;
-				c_instr.c4 = 1;
-				c_instr.c5 = 1;
-				c_instr.c6 = 1;
+				self.c_instr.c1 = 1;
+				self.c_instr.c2 = 1;
+				self.c_instr.c3 = 1;
+				self.c_instr.c4 = 1;
+				self.c_instr.c5 = 1;
+				self.c_instr.c6 = 1;
 			},
 			"-1" => {
-				c_instr.c1 = 1;
-				c_instr.c2 = 1;
-				c_instr.c3 = 1;
-				c_instr.c4 = 0;
-				c_instr.c5 = 1;
-				c_instr.c6 = 0;
+				self.c_instr.c1 = 1;
+				self.c_instr.c2 = 1;
+				self.c_instr.c3 = 1;
+				self.c_instr.c4 = 0;
+				self.c_instr.c5 = 1;
+				self.c_instr.c6 = 0;
 			},
 			"D" => {
-				c_instr.c1 = 0;
-				c_instr.c2 = 0;
-				c_instr.c3 = 1;
-				c_instr.c4 = 1;
-				c_instr.c5 = 0;
-				c_instr.c6 = 0;
+				self.c_instr.c1 = 0;
+				self.c_instr.c2 = 0;
+				self.c_instr.c3 = 1;
+				self.c_instr.c4 = 1;
+				self.c_instr.c5 = 0;
+				self.c_instr.c6 = 0;
 			},
 			"A" | "!M" => {
-				if mnemonic == "!M" {c_instr.a = 1;}
-				c_instr.c1 = 1;
-				c_instr.c2 = 0;
-				c_instr.c3 = 1;
-				c_instr.c4 = 0;
-				c_instr.c5 = 1;
-				c_instr.c6 = 0;
+				if mnemonic == "!M" {self.c_instr.a = 1;}
+				self.c_instr.c1 = 1;
+				self.c_instr.c2 = 0;
+				self.c_instr.c3 = 1;
+				self.c_instr.c4 = 0;
+				self.c_instr.c5 = 1;
+				self.c_instr.c6 = 0;
 			},
 			"!D" => {
-				c_instr.c1 = 1;
-				c_instr.c2 = 0;
-				c_instr.c3 = 1;
-				c_instr.c4 = 0;
-				c_instr.c5 = 1;
-				c_instr.c6 = 0;
+				self.c_instr.c1 = 1;
+				self.c_instr.c2 = 0;
+				self.c_instr.c3 = 1;
+				self.c_instr.c4 = 0;
+				self.c_instr.c5 = 1;
+				self.c_instr.c6 = 0;
 			},
 			"!A" => {
-				c_instr.c1 = 1;
-				c_instr.c2 = 0;
-				c_instr.c3 = 1;
-				c_instr.c4 = 0;
-				c_instr.c5 = 1;
-				c_instr.c6 = 0;
+				self.c_instr.c1 = 1;
+				self.c_instr.c2 = 0;
+				self.c_instr.c3 = 1;
+				self.c_instr.c4 = 0;
+				self.c_instr.c5 = 1;
+				self.c_instr.c6 = 0;
 			},
 			"-D" => {
-				c_instr.c1 = 1;
-				c_instr.c2 = 0;
-				c_instr.c3 = 1;
-				c_instr.c4 = 0;
-				c_instr.c5 = 1;
-				c_instr.c6 = 0;
+				self.c_instr.c1 = 1;
+				self.c_instr.c2 = 0;
+				self.c_instr.c3 = 1;
+				self.c_instr.c4 = 0;
+				self.c_instr.c5 = 1;
+				self.c_instr.c6 = 0;
 			},
 			"-A" | "-M" => {
-				if mnemonic == "-M" {c_instr.a = 1;}
-				c_instr.c1 = 1;
-				c_instr.c2 = 0;
-				c_instr.c3 = 1;
-				c_instr.c4 = 0;
-				c_instr.c5 = 1;
-				c_instr.c6 = 0;
+				if mnemonic == "-M" {self.c_instr.a = 1;}
+				self.c_instr.c1 = 1;
+				self.c_instr.c2 = 0;
+				self.c_instr.c3 = 1;
+				self.c_instr.c4 = 0;
+				self.c_instr.c5 = 1;
+				self.c_instr.c6 = 0;
 			},
 			"D+1" => {
-				c_instr.c1 = 1;
-				c_instr.c2 = 0;
-				c_instr.c3 = 1;
-				c_instr.c4 = 0;
-				c_instr.c5 = 1;
-				c_instr.c6 = 0;
+				self.c_instr.c1 = 1;
+				self.c_instr.c2 = 0;
+				self.c_instr.c3 = 1;
+				self.c_instr.c4 = 0;
+				self.c_instr.c5 = 1;
+				self.c_instr.c6 = 0;
 			},
 			"A+1" | "M+1" => {
-				if mnemonic == "M+1" {c_instr.a = 1;}
-				c_instr.c1 = 1;
-				c_instr.c2 = 0;
-				c_instr.c3 = 1;
-				c_instr.c4 = 0;
-				c_instr.c5 = 1;
-				c_instr.c6 = 0;
+				if mnemonic == "M+1" {self.c_instr.a = 1;}
+				self.c_instr.c1 = 1;
+				self.c_instr.c2 = 0;
+				self.c_instr.c3 = 1;
+				self.c_instr.c4 = 0;
+				self.c_instr.c5 = 1;
+				self.c_instr.c6 = 0;
 			},
 			"D-1" => {
-				c_instr.c1 = 1;
-				c_instr.c2 = 0;
-				c_instr.c3 = 1;
-				c_instr.c4 = 0;
-				c_instr.c5 = 1;
-				c_instr.c6 = 0;
+				self.c_instr.c1 = 1;
+				self.c_instr.c2 = 0;
+				self.c_instr.c3 = 1;
+				self.c_instr.c4 = 0;
+				self.c_instr.c5 = 1;
+				self.c_instr.c6 = 0;
 			},
 			"A-1" | "M-1" => {
-				if mnemonic == "M-1" {c_instr.a = 1;}
-				c_instr.c1 = 1;
-				c_instr.c2 = 0;
-				c_instr.c3 = 1;
-				c_instr.c4 = 0;
-				c_instr.c5 = 1;
-				c_instr.c6 = 0;
+				if mnemonic == "M-1" {self.c_instr.a = 1;}
+				self.c_instr.c1 = 1;
+				self.c_instr.c2 = 0;
+				self.c_instr.c3 = 1;
+				self.c_instr.c4 = 0;
+				self.c_instr.c5 = 1;
+				self.c_instr.c6 = 0;
 			},
 			"D+A" | "D+M" => {
-				if mnemonic == "D+M" {c_instr.a = 1;}
-				c_instr.c1 = 1;
-				c_instr.c2 = 0;
-				c_instr.c3 = 1;
-				c_instr.c4 = 0;
-				c_instr.c5 = 1;
-				c_instr.c6 = 0;
+				if mnemonic == "D+M" {self.c_instr.a = 1;}
+				self.c_instr.c1 = 1;
+				self.c_instr.c2 = 0;
+				self.c_instr.c3 = 1;
+				self.c_instr.c4 = 0;
+				self.c_instr.c5 = 1;
+				self.c_instr.c6 = 0;
 			},
 			"D-A" | "D-M" => {
-				if mnemonic == "D-M" {c_instr.a = 1;}
-				c_instr.c1 = 1;
-				c_instr.c2 = 0;
-				c_instr.c3 = 1;
-				c_instr.c4 = 0;
-				c_instr.c5 = 1;
-				c_instr.c6 = 0;
+				if mnemonic == "D-M" {self.c_instr.a = 1;}
+				self.c_instr.c1 = 1;
+				self.c_instr.c2 = 0;
+				self.c_instr.c3 = 1;
+				self.c_instr.c4 = 0;
+				self.c_instr.c5 = 1;
+				self.c_instr.c6 = 0;
 			},
 			"A-D" | "M-D" => {
-				if mnemonic == "M-D" {c_instr.a = 1;}
-				c_instr.c1 = 1;
-				c_instr.c2 = 0;
-				c_instr.c3 = 1;
-				c_instr.c4 = 0;
-				c_instr.c5 = 1;
-				c_instr.c6 = 0;
+				if mnemonic == "M-D" {self.c_instr.a = 1;}
+				self.c_instr.c1 = 1;
+				self.c_instr.c2 = 0;
+				self.c_instr.c3 = 1;
+				self.c_instr.c4 = 0;
+				self.c_instr.c5 = 1;
+				self.c_instr.c6 = 0;
 			},
 			"D&A" | "D&M" => {
-				if mnemonic == "D&M" {c_instr.a = 1;}
-				c_instr.c1 = 1;
-				c_instr.c2 = 0;
-				c_instr.c3 = 1;
-				c_instr.c4 = 0;
-				c_instr.c5 = 1;
-				c_instr.c6 = 0;
+				if mnemonic == "D&M" {self.c_instr.a = 1;}
+				self.c_instr.c1 = 1;
+				self.c_instr.c2 = 0;
+				self.c_instr.c3 = 1;
+				self.c_instr.c4 = 0;
+				self.c_instr.c5 = 1;
+				self.c_instr.c6 = 0;
 			},
 			"D|A" | "D|M" => {
-				if mnemonic == "D|M" {c_instr.a = 1;}
-				c_instr.c1 = 1;
-				c_instr.c2 = 0;
-				c_instr.c3 = 1;
-				c_instr.c4 = 0;
-				c_instr.c5 = 1;
-				c_instr.c6 = 0;
+				if mnemonic == "D|M" {self.c_instr.a = 1;}
+				self.c_instr.c1 = 1;
+				self.c_instr.c2 = 0;
+				self.c_instr.c3 = 1;
+				self.c_instr.c4 = 0;
+				self.c_instr.c5 = 1;
+				self.c_instr.c6 = 0;
 			},
 			_ => {},
 		}
-		c_instr
+		self.c_instr
 	}
 
 	/// Returns the binary code of the jump mnemonic
 	///
 	/// returns 3 bits
 	fn jump(mnemonic: &str) -> CInstruction {
-		let mut c_instr = CInstruction::new();
+		let mut self.c_instr = CInstruction::new();
 		match mnemonic {
 			"null" 	=> {},
 			"JGT"	=> {
-				c_instr.j3 = 1;
+				self.c_instr.j3 = 1;
 			},
 			"JEQ"	=> {
-				c_instr.j2 = 1;
+				self.c_instr.j2 = 1;
 			},
 			"JGE"	=> {
-				c_instr.j3 = 1;
-				c_instr.j2 = 1;
+				self.c_instr.j3 = 1;
+				self.c_instr.j2 = 1;
 			},
 			"JLT"	=> {
-				c_instr.j1 = 1;
+				self.c_instr.j1 = 1;
 			},
 			"JNE"	=> {
-				c_instr.j1 = 1;
-				c_instr.j3 = 1;
+				self.c_instr.j1 = 1;
+				self.c_instr.j3 = 1;
 			},
 			"JLE"	=> {
-				c_instr.j1 = 1;
-				c_instr.j2 = 1;
+				self.c_instr.j1 = 1;
+				self.c_instr.j2 = 1;
 			},
 			"JMP"	=> {
-				c_instr.j1 = 1;
-				c_instr.j2 = 1;
-				c_instr.j3 = 1;
+				self.c_instr.j1 = 1;
+				self.c_instr.j2 = 1;
+				self.c_instr.j3 = 1;
 			},
 			_		=> {},
 		}
-		c_instr
+		self.c_instr
 	}
 }
 
