@@ -188,26 +188,204 @@ impl Code {
 	/// Returns the binary code of the dest mnemonic
 	///
 	/// returns 3 bits
-	fn dest(mnemonic: &str) -> u8 {
+	fn dest(mnemonic: &str) -> CInstruction {
+		let mut c_instr = CInstruction::new();
 		match mnemonic {
-			"null" 	=> 0x00,
-			"M"		=> 0x01,
-			"D"		=> 0x02,
-			"MD"	=> 0x03,
-			"A"		=> 0x04,
-			"AM"	=> 0x05,
-			"AD"	=> 0x06,
-			"AMD"	=> 0x07,
-			_		=> 0x08,
+			"null" 	=> {},
+			"M"		=> {
+				c_instr.j3 = 1;
+			},
+			"D"		=> {
+				c_instr.j2 = 1;
+			},
+			"MD"	=> {
+				c_instr.j3 = 1;
+				c_instr.j2 = 1;
+			},
+			"A"		=> {
+				c_instr.j1 = 1;
+			},
+			"AM"	=> { 
+				c_instr.j1 = 1;
+				c_instr.j3 = 1;
+			},
+			"AD"	=> {
+				c_instr.j1 = 1;
+				c_instr.j2 = 1;
+			},
+			"AMD"	=> {
+				c_instr.j1 = 1;
+				c_instr.j2 = 1;
+				c_instr.j3 = 1;
+			},
+			_		=> {},
 		}
+		c_instr
 	}
 
 	/// Returns the binary code of the comp mnemonic
 	///
 	/// returns 7 bits
-	// fn comp(mnemonic: &str) -> u8 {
-
-	// }
+	fn comp(mnemonic: &str) -> CInstruction {
+		let mut c_instr = CInstruction::new();
+		match mnemonic {
+			"0" => {
+				c_instr.c1 = 1;
+				c_instr.c2 = 0;
+				c_instr.c3 = 1;
+				c_instr.c4 = 0;
+				c_instr.c5 = 1;
+				c_instr.c6 = 0;
+			},
+			"1" => {
+				c_instr.c1 = 1;
+				c_instr.c2 = 1;
+				c_instr.c3 = 1;
+				c_instr.c4 = 1;
+				c_instr.c5 = 1;
+				c_instr.c6 = 1;
+			},
+			"-1" => {
+				c_instr.c1 = 1;
+				c_instr.c2 = 1;
+				c_instr.c3 = 1;
+				c_instr.c4 = 0;
+				c_instr.c5 = 1;
+				c_instr.c6 = 0;
+			},
+			"D" => {
+				c_instr.c1 = 0;
+				c_instr.c2 = 0;
+				c_instr.c3 = 1;
+				c_instr.c4 = 1;
+				c_instr.c5 = 0;
+				c_instr.c6 = 0;
+			},
+			"A" | "!M" => {
+				if mnemonic == "!M" {c_instr.a = 1;}
+				c_instr.c1 = 1;
+				c_instr.c2 = 0;
+				c_instr.c3 = 1;
+				c_instr.c4 = 0;
+				c_instr.c5 = 1;
+				c_instr.c6 = 0;
+			},
+			"!D" => {
+				c_instr.c1 = 1;
+				c_instr.c2 = 0;
+				c_instr.c3 = 1;
+				c_instr.c4 = 0;
+				c_instr.c5 = 1;
+				c_instr.c6 = 0;
+			},
+			"!A" => {
+				c_instr.c1 = 1;
+				c_instr.c2 = 0;
+				c_instr.c3 = 1;
+				c_instr.c4 = 0;
+				c_instr.c5 = 1;
+				c_instr.c6 = 0;
+			},
+			"-D" => {
+				c_instr.c1 = 1;
+				c_instr.c2 = 0;
+				c_instr.c3 = 1;
+				c_instr.c4 = 0;
+				c_instr.c5 = 1;
+				c_instr.c6 = 0;
+			},
+			"-A" | "-M" => {
+				if mnemonic == "-M" {c_instr.a = 1;}
+				c_instr.c1 = 1;
+				c_instr.c2 = 0;
+				c_instr.c3 = 1;
+				c_instr.c4 = 0;
+				c_instr.c5 = 1;
+				c_instr.c6 = 0;
+			},
+			"D+1" => {
+				c_instr.c1 = 1;
+				c_instr.c2 = 0;
+				c_instr.c3 = 1;
+				c_instr.c4 = 0;
+				c_instr.c5 = 1;
+				c_instr.c6 = 0;
+			},
+			"A+1" | "M+1" => {
+				if mnemonic == "M+1" {c_instr.a = 1;}
+				c_instr.c1 = 1;
+				c_instr.c2 = 0;
+				c_instr.c3 = 1;
+				c_instr.c4 = 0;
+				c_instr.c5 = 1;
+				c_instr.c6 = 0;
+			},
+			"D-1" => {
+				c_instr.c1 = 1;
+				c_instr.c2 = 0;
+				c_instr.c3 = 1;
+				c_instr.c4 = 0;
+				c_instr.c5 = 1;
+				c_instr.c6 = 0;
+			},
+			"A-1" | "M-1" => {
+				if mnemonic == "M-1" {c_instr.a = 1;}
+				c_instr.c1 = 1;
+				c_instr.c2 = 0;
+				c_instr.c3 = 1;
+				c_instr.c4 = 0;
+				c_instr.c5 = 1;
+				c_instr.c6 = 0;
+			},
+			"D+A" | "D+M" => {
+				if mnemonic == "D+M" {c_instr.a = 1;}
+				c_instr.c1 = 1;
+				c_instr.c2 = 0;
+				c_instr.c3 = 1;
+				c_instr.c4 = 0;
+				c_instr.c5 = 1;
+				c_instr.c6 = 0;
+			},
+			"D-A" | "D-M" => {
+				if mnemonic == "D-M" {c_instr.a = 1;}
+				c_instr.c1 = 1;
+				c_instr.c2 = 0;
+				c_instr.c3 = 1;
+				c_instr.c4 = 0;
+				c_instr.c5 = 1;
+				c_instr.c6 = 0;
+			},
+			"A-D" | "M-D" => {
+				if mnemonic == "M-D" {c_instr.a = 1;}
+				c_instr.c1 = 1;
+				c_instr.c2 = 0;
+				c_instr.c3 = 1;
+				c_instr.c4 = 0;
+				c_instr.c5 = 1;
+				c_instr.c6 = 0;
+			},
+			"D&A" | "D&M" => {
+				if mnemonic == "D&M" {c_instr.a = 1;}
+				c_instr.c1 = 1;
+				c_instr.c2 = 0;
+				c_instr.c3 = 1;
+				c_instr.c4 = 0;
+				c_instr.c5 = 1;
+				c_instr.c6 = 0;
+			},
+			"D|A" | "D|M" => {
+				if mnemonic == "D|M" {c_instr.a = 1;}
+				c_instr.c1 = 1;
+				c_instr.c2 = 0;
+				c_instr.c3 = 1;
+				c_instr.c4 = 0;
+				c_instr.c5 = 1;
+				c_instr.c6 = 0;
+			},
+			_ => {},
+		}
+		c_instr
+	}
 
 	/// Returns the binary code of the jump mnemonic
 	///
@@ -215,7 +393,7 @@ impl Code {
 	fn jump(mnemonic: &str) -> CInstruction {
 		let mut c_instr = CInstruction::new();
 		match mnemonic {
-			"null" 	=> ,
+			"null" 	=> {},
 			"JGT"	=> {
 				c_instr.j3 = 1;
 			},
@@ -242,7 +420,7 @@ impl Code {
 				c_instr.j2 = 1;
 				c_instr.j3 = 1;
 			},
-			_		=> ,
+			_		=> {},
 		}
 		c_instr
 	}
