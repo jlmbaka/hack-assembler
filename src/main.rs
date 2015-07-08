@@ -19,7 +19,6 @@ use CommandType::{ACommand, CCommand, LCommand};
 /// 	* Symbol table
 struct Assembler {
 	parser: Parser,
-	code: Code,
 	input_filename: String,
 }
 
@@ -27,7 +26,6 @@ impl Assembler {
 	fn new(filename: &str) -> Assembler {
 		Assembler {
 			parser: Parser::new(filename),
-			code: Code::new(),
 			input_filename: filename.to_string(), 
 		}
 	}
@@ -255,9 +253,6 @@ impl Parser {
 struct Code;
 
 impl Code {
-	fn new() -> Code {
-		Code
-	}
 
 	/// Returns the binary code of the dest mnemonic
 	///
@@ -503,6 +498,7 @@ impl Code {
 /// Change the bits at indexes in index to values in dest
 ///
 /// Takes a hashmap such as bit_index -> bit_value
+#[allow(dead_code)]
 fn set_bits(mut word:i16, index_bitvalue: HashMap<i16, i16>) -> i16 {
 	for index in index_bitvalue.keys() {
 		let bit_value: i16 = match index_bitvalue.get(index) {
