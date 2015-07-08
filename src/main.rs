@@ -68,10 +68,11 @@ impl Assembler {
 	///			Reads the next command from the input and makes it the current command
 	fn run(&mut self) {
 
-		// let v: Vec<&str> = self.filename.rsplitn(1, ".asm").collect();
-		let v = self.input_filename.trim_right_matches(".asm");
+		let v: Vec<&str> = self.filename.rsplitn(1, ".asm").collect();
+		// let v = self.input_filename.trim_right_matches(".asm");
+
 		let output_ext = ".hack";
-		let output_filename = v.to_string() + output_ext;
+		let output_filename = v[0].to_string() + output_ext;
 
 		// Binary code file where the translated assembly will be written to. 
 		let output_file = Assembler::open_file(&output_filename);  // closed when binding goes out of scope.
