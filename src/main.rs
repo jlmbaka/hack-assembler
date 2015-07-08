@@ -37,7 +37,7 @@ impl Assembler {
 		let path = Path::new(filename);
 		let display = path.display();
 
-		let mut file = match OpenOptions::new()
+		let file = match OpenOptions::new()
 		.read(true)
 		.write(true)
 		.create(true)
@@ -101,13 +101,19 @@ impl Assembler {
 						},
 						CCommand => {
 							println!("CCommand: {0}", self.parser.current_command);
-							println!("\tdest: {0}", self.parser.dest());
-							println!("\tcomp: {0}", self.parser.comp());
-							println!("\tjump: {0}", self.parser.jump());
 
-							// let dest = self.code.dest(self.parser.dest());
-							// let comp = self.code.comp(self.parser.comp());
-							// let jump = self.code.jump(self.parser.jump());
+							let dest = Code::dest(&self.parser.dest());
+							let comp = Code::comp(&self.parser.comp());
+							let jump = Code::jump(&self.parser.jump());
+
+							let c_instr = "111".to_string() + &(comp.to_string()) + &(dest.to_string()) + &(jump.to_string());
+
+							println!("{} {} {} {}", "0b111", dest.to_string(), comp.to_string(), jump.to_string());
+
+
+							Assembler::write_to_file(&output_file, u16::from_str_radix(&c_instr, 2).unwrap());
+
+
 						},
 						LCommand => {
 							println!("LCommand: {0}", self.parser.current_command);
@@ -237,264 +243,251 @@ impl Parser {
 }
 
 /// Translate Hack assembly language mnemonic into binary codes
-struct Code {
-	c_instr: CInstruction,
-}
+struct Code;
 
 impl Code {
 	fn new() -> Code {
-		Code {
-			c_instr: CInstruction::new(),
-		}
-	}
-
-	/// Reset all the bits to 0
-	fn clear(mut self) {
-		self.c_instr = CInstruction::new();
-	}
-
-	/// Gives the binary representation of the current instruction as string.
-	///
-	/// 111ac1c2c3c4c5c6d1d2d3j1j2j3
-	fn format(self) {
-		println!("{0}", self.c_instr);
+		Code
 	}
 
 	/// Returns the binary code of the dest mnemonic
 	///
 	/// returns 3 bits
-	fn dest(mut self, mnemonic: &str) -> CInstruction {
+	fn dest(mnemonic: &str) -> Dest {
+		let mut dest_bits = Dest::new();
 		match mnemonic {
 			"null" 	=> {},
 			"M"		=> {
-				self.c_instr.j3 = 1;
+				dest_bits.d3 = 1;
 			},
 			"D"		=> {
-				self.c_instr.j2 = 1;
+				dest_bits.d2 = 1;
 			},
 			"MD"	=> {
-				self.c_instr.j3 = 1;
-				self.c_instr.j2 = 1;
+				dest_bits.d3 = 1;
+				dest_bits.d2 = 1;
 			},
 			"A"		=> {
-				self.c_instr.j1 = 1;
+				dest_bits.d1 = 1;
 			},
 			"AM"	=> { 
-				self.c_instr.j1 = 1;
-				self.c_instr.j3 = 1;
+				dest_bits.d1 = 1;
+				dest_bits.d3 = 1;
 			},
 			"AD"	=> {
-				self.c_instr.j1 = 1;
-				self.c_instr.j2 = 1;
+				dest_bits.d1 = 1;
+				dest_bits.d2 = 1;
 			},
 			"AMD"	=> {
-				self.c_instr.j1 = 1;
-				self.c_instr.j2 = 1;
-				self.c_instr.j3 = 1;
+				dest_bits.d1 = 1;
+				dest_bits.d2 = 1;
+				dest_bits.d3 = 1;
 			},
 			_		=> {},
 		}
-		self.c_instr
+		dest_bits
 	}
 
 	/// Returns the binary code of the comp mnemonic
 	///
 	/// returns 7 bits
-	fn comp(mut self, mnemonic: &str) -> CInstruction {
+	fn comp(mnemonic: &str) -> Comp {
+		let mut comp_bits = Comp::new();
 		match mnemonic {
 			"0" => {
-				self.c_instr.c1 = 1;
-				self.c_instr.c2 = 0;
-				self.c_instr.c3 = 1;
-				self.c_instr.c4 = 0;
-				self.c_instr.c5 = 1;
-				self.c_instr.c6 = 0;
+				comp_bits.c1 = 1;
+				comp_bits.c2 = 0;
+				comp_bits.c3 = 1;
+				comp_bits.c4 = 0;
+				comp_bits.c5 = 1;
+				comp_bits.c6 = 0;
 			},
 			"1" => {
-				self.c_instr.c1 = 1;
-				self.c_instr.c2 = 1;
-				self.c_instr.c3 = 1;
-				self.c_instr.c4 = 1;
-				self.c_instr.c5 = 1;
-				self.c_instr.c6 = 1;
+				comp_bits.c1 = 1;
+				comp_bits.c2 = 1;
+				comp_bits.c3 = 1;
+				comp_bits.c4 = 1;
+				comp_bits.c5 = 1;
+				comp_bits.c6 = 1;
 			},
 			"-1" => {
-				self.c_instr.c1 = 1;
-				self.c_instr.c2 = 1;
-				self.c_instr.c3 = 1;
-				self.c_instr.c4 = 0;
-				self.c_instr.c5 = 1;
-				self.c_instr.c6 = 0;
+				comp_bits.c1 = 1;
+				comp_bits.c2 = 1;
+				comp_bits.c3 = 1;
+				comp_bits.c4 = 0;
+				comp_bits.c5 = 1;
+				comp_bits.c6 = 0;
 			},
 			"D" => {
-				self.c_instr.c1 = 0;
-				self.c_instr.c2 = 0;
-				self.c_instr.c3 = 1;
-				self.c_instr.c4 = 1;
-				self.c_instr.c5 = 0;
-				self.c_instr.c6 = 0;
+				comp_bits.c1 = 0;
+				comp_bits.c2 = 0;
+				comp_bits.c3 = 1;
+				comp_bits.c4 = 1;
+				comp_bits.c5 = 0;
+				comp_bits.c6 = 0;
 			},
 			"A" | "!M" => {
-				if mnemonic == "!M" {self.c_instr.a = 1;}
-				self.c_instr.c1 = 1;
-				self.c_instr.c2 = 0;
-				self.c_instr.c3 = 1;
-				self.c_instr.c4 = 0;
-				self.c_instr.c5 = 1;
-				self.c_instr.c6 = 0;
+				if mnemonic == "!M" {comp_bits.a = 1;}
+				comp_bits.c1 = 1;
+				comp_bits.c2 = 0;
+				comp_bits.c3 = 1;
+				comp_bits.c4 = 0;
+				comp_bits.c5 = 1;
+				comp_bits.c6 = 0;
 			},
 			"!D" => {
-				self.c_instr.c1 = 1;
-				self.c_instr.c2 = 0;
-				self.c_instr.c3 = 1;
-				self.c_instr.c4 = 0;
-				self.c_instr.c5 = 1;
-				self.c_instr.c6 = 0;
+				comp_bits.c1 = 1;
+				comp_bits.c2 = 0;
+				comp_bits.c3 = 1;
+				comp_bits.c4 = 0;
+				comp_bits.c5 = 1;
+				comp_bits.c6 = 0;
 			},
 			"!A" => {
-				self.c_instr.c1 = 1;
-				self.c_instr.c2 = 0;
-				self.c_instr.c3 = 1;
-				self.c_instr.c4 = 0;
-				self.c_instr.c5 = 1;
-				self.c_instr.c6 = 0;
+				comp_bits.c1 = 1;
+				comp_bits.c2 = 0;
+				comp_bits.c3 = 1;
+				comp_bits.c4 = 0;
+				comp_bits.c5 = 1;
+				comp_bits.c6 = 0;
 			},
 			"-D" => {
-				self.c_instr.c1 = 1;
-				self.c_instr.c2 = 0;
-				self.c_instr.c3 = 1;
-				self.c_instr.c4 = 0;
-				self.c_instr.c5 = 1;
-				self.c_instr.c6 = 0;
+				comp_bits.c1 = 1;
+				comp_bits.c2 = 0;
+				comp_bits.c3 = 1;
+				comp_bits.c4 = 0;
+				comp_bits.c5 = 1;
+				comp_bits.c6 = 0;
 			},
 			"-A" | "-M" => {
-				if mnemonic == "-M" {self.c_instr.a = 1;}
-				self.c_instr.c1 = 1;
-				self.c_instr.c2 = 0;
-				self.c_instr.c3 = 1;
-				self.c_instr.c4 = 0;
-				self.c_instr.c5 = 1;
-				self.c_instr.c6 = 0;
+				if mnemonic == "-M" {comp_bits.a = 1;}
+				comp_bits.c1 = 1;
+				comp_bits.c2 = 0;
+				comp_bits.c3 = 1;
+				comp_bits.c4 = 0;
+				comp_bits.c5 = 1;
+				comp_bits.c6 = 0;
 			},
 			"D+1" => {
-				self.c_instr.c1 = 1;
-				self.c_instr.c2 = 0;
-				self.c_instr.c3 = 1;
-				self.c_instr.c4 = 0;
-				self.c_instr.c5 = 1;
-				self.c_instr.c6 = 0;
+				comp_bits.c1 = 1;
+				comp_bits.c2 = 0;
+				comp_bits.c3 = 1;
+				comp_bits.c4 = 0;
+				comp_bits.c5 = 1;
+				comp_bits.c6 = 0;
 			},
 			"A+1" | "M+1" => {
-				if mnemonic == "M+1" {self.c_instr.a = 1;}
-				self.c_instr.c1 = 1;
-				self.c_instr.c2 = 0;
-				self.c_instr.c3 = 1;
-				self.c_instr.c4 = 0;
-				self.c_instr.c5 = 1;
-				self.c_instr.c6 = 0;
+				if mnemonic == "M+1" {comp_bits.a = 1;}
+				comp_bits.c1 = 1;
+				comp_bits.c2 = 0;
+				comp_bits.c3 = 1;
+				comp_bits.c4 = 0;
+				comp_bits.c5 = 1;
+				comp_bits.c6 = 0;
 			},
 			"D-1" => {
-				self.c_instr.c1 = 1;
-				self.c_instr.c2 = 0;
-				self.c_instr.c3 = 1;
-				self.c_instr.c4 = 0;
-				self.c_instr.c5 = 1;
-				self.c_instr.c6 = 0;
+				comp_bits.c1 = 1;
+				comp_bits.c2 = 0;
+				comp_bits.c3 = 1;
+				comp_bits.c4 = 0;
+				comp_bits.c5 = 1;
+				comp_bits.c6 = 0;
 			},
 			"A-1" | "M-1" => {
-				if mnemonic == "M-1" {self.c_instr.a = 1;}
-				self.c_instr.c1 = 1;
-				self.c_instr.c2 = 0;
-				self.c_instr.c3 = 1;
-				self.c_instr.c4 = 0;
-				self.c_instr.c5 = 1;
-				self.c_instr.c6 = 0;
+				if mnemonic == "M-1" {comp_bits.a = 1;}
+				comp_bits.c1 = 1;
+				comp_bits.c2 = 0;
+				comp_bits.c3 = 1;
+				comp_bits.c4 = 0;
+				comp_bits.c5 = 1;
+				comp_bits.c6 = 0;
 			},
 			"D+A" | "D+M" => {
-				if mnemonic == "D+M" {self.c_instr.a = 1;}
-				self.c_instr.c1 = 1;
-				self.c_instr.c2 = 0;
-				self.c_instr.c3 = 1;
-				self.c_instr.c4 = 0;
-				self.c_instr.c5 = 1;
-				self.c_instr.c6 = 0;
+				if mnemonic == "D+M" {comp_bits.a = 1;}
+				comp_bits.c1 = 1;
+				comp_bits.c2 = 0;
+				comp_bits.c3 = 1;
+				comp_bits.c4 = 0;
+				comp_bits.c5 = 1;
+				comp_bits.c6 = 0;
 			},
 			"D-A" | "D-M" => {
-				if mnemonic == "D-M" {self.c_instr.a = 1;}
-				self.c_instr.c1 = 1;
-				self.c_instr.c2 = 0;
-				self.c_instr.c3 = 1;
-				self.c_instr.c4 = 0;
-				self.c_instr.c5 = 1;
-				self.c_instr.c6 = 0;
+				if mnemonic == "D-M" {comp_bits.a = 1;}
+				comp_bits.c1 = 1;
+				comp_bits.c2 = 0;
+				comp_bits.c3 = 1;
+				comp_bits.c4 = 0;
+				comp_bits.c5 = 1;
+				comp_bits.c6 = 0;
 			},
 			"A-D" | "M-D" => {
-				if mnemonic == "M-D" {self.c_instr.a = 1;}
-				self.c_instr.c1 = 1;
-				self.c_instr.c2 = 0;
-				self.c_instr.c3 = 1;
-				self.c_instr.c4 = 0;
-				self.c_instr.c5 = 1;
-				self.c_instr.c6 = 0;
+				if mnemonic == "M-D" {comp_bits.a = 1;}
+				comp_bits.c1 = 1;
+				comp_bits.c2 = 0;
+				comp_bits.c3 = 1;
+				comp_bits.c4 = 0;
+				comp_bits.c5 = 1;
+				comp_bits.c6 = 0;
 			},
 			"D&A" | "D&M" => {
-				if mnemonic == "D&M" {self.c_instr.a = 1;}
-				self.c_instr.c1 = 1;
-				self.c_instr.c2 = 0;
-				self.c_instr.c3 = 1;
-				self.c_instr.c4 = 0;
-				self.c_instr.c5 = 1;
-				self.c_instr.c6 = 0;
+				if mnemonic == "D&M" {comp_bits.a = 1;}
+				comp_bits.c1 = 1;
+				comp_bits.c2 = 0;
+				comp_bits.c3 = 1;
+				comp_bits.c4 = 0;
+				comp_bits.c5 = 1;
+				comp_bits.c6 = 0;
 			},
 			"D|A" | "D|M" => {
-				if mnemonic == "D|M" {self.c_instr.a = 1;}
-				self.c_instr.c1 = 1;
-				self.c_instr.c2 = 0;
-				self.c_instr.c3 = 1;
-				self.c_instr.c4 = 0;
-				self.c_instr.c5 = 1;
-				self.c_instr.c6 = 0;
+				if mnemonic == "D|M" {comp_bits.a = 1;}
+				comp_bits.c1 = 1;
+				comp_bits.c2 = 0;
+				comp_bits.c3 = 1;
+				comp_bits.c4 = 0;
+				comp_bits.c5 = 1;
+				comp_bits.c6 = 0;
 			},
 			_ => {},
 		}
-		self.c_instr
+		comp_bits
 	}
 
 	/// Returns the binary code of the jump mnemonic
 	///
 	/// returns 3 bits
-	fn jump(mut self, mnemonic: &str) -> CInstruction {
+	fn jump(mnemonic: &str) -> Jump {
+		let mut jump_bits = Jump::new();
 		match mnemonic {
 			"null" 	=> {},
 			"JGT"	=> {
-				self.c_instr.j3 = 1;
+				jump_bits.j3 = 1;
 			},
 			"JEQ"	=> {
-				self.c_instr.j2 = 1;
+				jump_bits.j2 = 1;
 			},
 			"JGE"	=> {
-				self.c_instr.j3 = 1;
-				self.c_instr.j2 = 1;
+				jump_bits.j3 = 1;
+				jump_bits.j2 = 1;
 			},
 			"JLT"	=> {
-				self.c_instr.j1 = 1;
+				jump_bits.j1 = 1;
 			},
 			"JNE"	=> {
-				self.c_instr.j1 = 1;
-				self.c_instr.j3 = 1;
+				jump_bits.j1 = 1;
+				jump_bits.j3 = 1;
 			},
 			"JLE"	=> {
-				self.c_instr.j1 = 1;
-				self.c_instr.j2 = 1;
+				jump_bits.j1 = 1;
+				jump_bits.j2 = 1;
 			},
 			"JMP"	=> {
-				self.c_instr.j1 = 1;
-				self.c_instr.j2 = 1;
-				self.c_instr.j3 = 1;
+				jump_bits.j1 = 1;
+				jump_bits.j2 = 1;
+				jump_bits.j3 = 1;
 			},
 			_		=> {},
 		}
-		self.c_instr
+		jump_bits
 	}
 }
 
@@ -512,8 +505,29 @@ fn set_bits(mut word:i16, index_bitvalue: HashMap<i16, i16>) -> i16 {
 	word
 }
 
-/// CInstruction bitfield
-struct CInstruction {
+struct Dest {
+	d1: u8,
+	d2: u8,
+	d3: u8,
+}
+
+impl Dest {
+	fn new() -> Dest {
+		Dest {
+			d1: 0,
+			d2: 0,
+			d3: 0,
+		}
+	}
+}
+
+impl fmt::Display for Dest {
+	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+		write!(f, "{0}{1}{2}",self.d1, self.d2, self.d3)
+	}
+}
+
+struct Comp {
 	a: u8,
 	c1: u8,
 	c2: u8,
@@ -521,17 +535,11 @@ struct CInstruction {
 	c4: u8,
 	c5: u8,
 	c6: u8,
-	d1: u8,
-	d2: u8,
-	d3: u8,
-	j1: u8,
-	j2: u8,
-	j3: u8,
 }
 
-impl CInstruction {
-	fn new() -> CInstruction {
-		CInstruction {
+impl Comp {
+	fn new() -> Comp {
+		Comp {
 			a: 0,
 			c1: 0,
 			c2: 0,
@@ -539,9 +547,26 @@ impl CInstruction {
 			c4: 0,
 			c5: 0,
 			c6: 0,
-			d1: 0,
-			d2: 0,
-			d3: 0,
+		}
+	}
+}
+
+impl fmt::Display for Comp {
+	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+		write!(f, "{0}{1}{2}{3}{4}{5}{6}",
+			self.a, self.c1, self.c2, self.c3,self.c4,self.c5, self.c6)
+	}
+}
+
+struct Jump {
+	j1: u8,
+	j2: u8,
+	j3: u8,
+}
+
+impl Jump {
+	fn new() -> Jump {
+		Jump {
 			j1: 0,
 			j2: 0,
 			j3: 0,
@@ -549,13 +574,9 @@ impl CInstruction {
 	}
 }
 
-impl fmt::Display for CInstruction {
+impl fmt::Display for Jump {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-		write!(f, "111{0}{1}{2}{3}{4}{5}{6}{7}{8}{9}{10}{11}{12}",
-			self.a, 
-			self.c1, self.c2, self.c3,self.c4,self.c5, self.c6,
-			self.d1, self.d2, self.d3,
-			self.j1, self.j2, self.j3)
+		write!(f, "{0}{1}{2}",self.j1, self.j2, self.j3)
 	}
 }
 
