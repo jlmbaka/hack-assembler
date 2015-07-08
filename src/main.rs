@@ -7,9 +7,82 @@ use std::io::BufRead;
 use std::io::Lines;
 use std::collections::HashMap;
 use std::fmt;
-
 use CommandType::{ACommand, CCommand, LCommand};
 
+
+/// Main module that puts everything together and drives the entire translation process.
+///
+/// Made up of the following components:
+///		* Parser
+///		* Code module
+/// 	* Symbol table
+struct Assembler {
+	parser: Parser,
+	code: Code,
+}
+
+impl Assembler {
+	fn new(filename: &str) -> Assembler {
+		Assembler {
+			parser: Parser::new(filename),
+			code: Code::new(),
+		}
+	}
+
+	/// Puts everything in motion.
+	/// Contains the main program logc
+	///
+	/// TODO Consider moving it to a separte stand alone module.
+	///
+	///		Are there any more commands in the input?
+	///			Reads the next command from the input and makes it the current command
+	fn parse(&mut self) {
+		loop {
+			match self.parser.input_lines.next() { 
+				Some(line) => { // has_more_command.true
+					let content = line.unwrap().trim().to_string();
+
+					// ignore line comments and empty lines
+					if content.starts_with("//") || content == "\n" || content == "" {
+						continue
+					}
+
+					// remove inline commnents
+					let mut content_without_inline = String::new();
+					if content.contains("//") {
+						let v: Vec<&str> = content.split("//").collect();
+						content_without_inline = v[0].trim().to_string();
+					}
+
+					// decide whether to use content_with_inline or content
+					if content_without_inline != String::new() {
+						self.parser.current_command = content_without_inline;
+					} else {
+						self.parser.current_command = content;
+					}
+
+					match self.parser.command_type() {
+						ACommand => {
+							println!("ACommand: {0}", self.parser.current_command);
+							println!("\tsymbol: {0}", self.parser.symbol());
+						},
+						CCommand => {
+							println!("CCommand: {0}", self.parser.current_command);
+							println!("\tdest: {0}", self.parser.dest());
+							println!("\tcomp: {0}", self.parser.comp());
+							println!("\tjump: {0}", self.parser.jump());
+						},
+						LCommand => {
+							println!("LCommand: {0}", self.parser.current_command);
+							println!("\tsymbol: {0}", self.parser.symbol());
+						},
+					}
+				},
+				None => break, // has_more_command.false
+			}
+		}
+	}
+}
 
 enum CommandType {
 	ACommand,
@@ -35,60 +108,6 @@ impl Parser {
 		Parser {
 			input_lines: lines, 
 			current_command: String::new(),
-		}
-	}
-
-	/// Contains the main program logc
-	///
-	/// TODO Consider moving it to a separte stand alone module.
-	///
-	///		Are there any more commands in the input?
-	///			Reads the next command from the input and makes it the current command
-	fn parse(&mut self) {
-		loop {
-			match self.input_lines.next() { 
-				Some(line) => {
-					let content = line.unwrap().trim().to_string();
-
-					// ignore line comments and empty lines
-					if content.starts_with("//") || content == "\n" || content == "" {
-						continue
-					}
-
-
-					// remove inline commnents
-					let mut content_without_inline = String::new();
-					if content.contains("//") {
-						let v: Vec<&str> = content.split("//").collect();
-						content_without_inline = v[0].trim().to_string();
-					}
-
-					// decide whether to use content_with_inline or content
-					if content_without_inline != String::new() {
-						self.current_command = content_without_inline;
-					} else {
-						self.current_command = content;
-					}
-
-					match self.command_type() {
-						ACommand => {
-							println!("ACommand: {0}", self.current_command);
-							println!("\tsymbol: {0}", self.symbol());
-						},
-						CCommand => {
-							println!("CCommand: {0}", self.current_command);
-							println!("\tdest: {0}", self.dest());
-							println!("\tcomp: {0}", self.comp());
-							println!("\tjump: {0}", self.jump());
-						},
-						LCommand => {
-							println!("LCommand: {0}", self.current_command);
-							println!("\tsymbol: {0}", self.symbol());
-						},
-					}
-				},
-				None => break,
-			}
 		}
 	}
 
@@ -131,10 +150,10 @@ impl Parser {
 		}
 	}
 
-	// /// Returns the comp mnemonic in the current CCommand. dest=comp;jump
-	// ///
-	// /// 28 possibilities.
-	// /// Should only be called when cammand_type() is CCommand.
+	/// Returns the comp mnemonic in the current CCommand. dest=comp;jump
+	///
+	/// 28 possibilities.
+	/// Should only be called when cammand_type() is CCommand.
 	fn comp(&self) -> String {
 		match self.current_command.contains('=') {
 			true => {
@@ -508,7 +527,7 @@ fn main() {
 			machine code.\n\nUsage:\n\tassembler [PATH_TO_ASM_FILE]");
 		return;
 	}
-	let path_to_asm = &args[1];
-	let mut parser = Parser::new(path_to_asm);
-	parser.parse();
+	let path_to_asm_file = &args[1];
+	let mut assembler = Assembler::new(path_to_asm_file);
+	assembler.parse();
 }
