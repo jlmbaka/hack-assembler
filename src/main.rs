@@ -20,6 +20,7 @@ use CommandType::{ACommand, CCommand, LCommand};
 struct Assembler {
 	parser: Parser,
 	code: Code,
+	input_filename: String,
 }
 
 impl Assembler {
@@ -27,6 +28,7 @@ impl Assembler {
 		Assembler {
 			parser: Parser::new(filename),
 			code: Code::new(),
+			input_filename: filename.to_string(), 
 		}
 	}
 
@@ -60,14 +62,19 @@ impl Assembler {
 	/// Puts everything in motion.
 	/// Contains the main program logc
 	///
-	/// TODO Consider moving it to a separte stand alone module.
+	/// TODO Consider moving it to a stand alone module.
 	///
 	///		Are there any more commands in the input?
 	///			Reads the next command from the input and makes it the current command
 	fn run(&mut self) {
 
+		// let v: Vec<&str> = self.filename.rsplitn(1, ".asm").collect();
+		let v = self.input_filename.trim_right_matches(".asm");
+		let output_ext = ".hack";
+		let output_filename = v.to_string() + output_ext;
+
 		// Binary code file where the translated assembly will be written to. 
-		let output_file = Assembler::open_file("06/add/Add.hack");  // closed when binding goes out of scope.
+		let output_file = Assembler::open_file(&output_filename);  // closed when binding goes out of scope.
 
 		loop {
 			match self.parser.input_lines.next() { 
