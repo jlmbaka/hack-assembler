@@ -329,123 +329,123 @@ impl Code {
 			"A" | "!M" => {
 				if mnemonic == "!M" {comp_bits.a = 1;}
 				comp_bits.c1 = 1;
-				comp_bits.c2 = 0;
-				comp_bits.c3 = 1;
+				comp_bits.c2 = 1;
+				comp_bits.c3 = 0;
 				comp_bits.c4 = 0;
-				comp_bits.c5 = 1;
+				comp_bits.c5 = 0;
 				comp_bits.c6 = 0;
 			},
 			"!D" => {
-				comp_bits.c1 = 1;
+				comp_bits.c1 = 0;
 				comp_bits.c2 = 0;
 				comp_bits.c3 = 1;
-				comp_bits.c4 = 0;
-				comp_bits.c5 = 1;
-				comp_bits.c6 = 0;
+				comp_bits.c4 = 1;
+				comp_bits.c5 = 0;
+				comp_bits.c6 = 1;
 			},
 			"!A" => {
 				comp_bits.c1 = 1;
-				comp_bits.c2 = 0;
-				comp_bits.c3 = 1;
+				comp_bits.c2 = 1;
+				comp_bits.c3 = 0;
 				comp_bits.c4 = 0;
-				comp_bits.c5 = 1;
-				comp_bits.c6 = 0;
+				comp_bits.c5 = 0;
+				comp_bits.c6 = 1;
 			},
 			"-D" => {
-				comp_bits.c1 = 1;
+				comp_bits.c1 = 0;
 				comp_bits.c2 = 0;
 				comp_bits.c3 = 1;
-				comp_bits.c4 = 0;
+				comp_bits.c4 = 1;
 				comp_bits.c5 = 1;
-				comp_bits.c6 = 0;
+				comp_bits.c6 = 1;
 			},
 			"-A" | "-M" => {
 				if mnemonic == "-M" {comp_bits.a = 1;}
 				comp_bits.c1 = 1;
-				comp_bits.c2 = 0;
-				comp_bits.c3 = 1;
+				comp_bits.c2 = 1;
+				comp_bits.c3 = 0;
 				comp_bits.c4 = 0;
 				comp_bits.c5 = 1;
-				comp_bits.c6 = 0;
+				comp_bits.c6 = 1;
 			},
 			"D+1" => {
-				comp_bits.c1 = 1;
-				comp_bits.c2 = 0;
+				comp_bits.c1 = 0;
+				comp_bits.c2 = 1;
 				comp_bits.c3 = 1;
-				comp_bits.c4 = 0;
+				comp_bits.c4 = 1;
 				comp_bits.c5 = 1;
-				comp_bits.c6 = 0;
+				comp_bits.c6 = 1;
 			},
 			"A+1" | "M+1" => {
 				if mnemonic == "M+1" {comp_bits.a = 1;}
 				comp_bits.c1 = 1;
-				comp_bits.c2 = 0;
-				comp_bits.c3 = 1;
-				comp_bits.c4 = 0;
+				comp_bits.c2 = 1;
+				comp_bits.c3 = 0;
+				comp_bits.c4 = 1;
 				comp_bits.c5 = 1;
-				comp_bits.c6 = 0;
+				comp_bits.c6 = 1;
 			},
 			"D-1" => {
-				comp_bits.c1 = 1;
+				comp_bits.c1 = 0;
 				comp_bits.c2 = 0;
 				comp_bits.c3 = 1;
-				comp_bits.c4 = 0;
+				comp_bits.c4 = 1;
 				comp_bits.c5 = 1;
 				comp_bits.c6 = 0;
 			},
 			"A-1" | "M-1" => {
 				if mnemonic == "M-1" {comp_bits.a = 1;}
 				comp_bits.c1 = 1;
-				comp_bits.c2 = 0;
-				comp_bits.c3 = 1;
+				comp_bits.c2 = 1;
+				comp_bits.c3 = 0;
 				comp_bits.c4 = 0;
 				comp_bits.c5 = 1;
 				comp_bits.c6 = 0;
 			},
 			"D+A" | "D+M" => {
 				if mnemonic == "D+M" {comp_bits.a = 1;}
-				comp_bits.c1 = 1;
+				comp_bits.c1 = 0;
 				comp_bits.c2 = 0;
-				comp_bits.c3 = 1;
+				comp_bits.c3 = 0;
 				comp_bits.c4 = 0;
 				comp_bits.c5 = 1;
 				comp_bits.c6 = 0;
 			},
 			"D-A" | "D-M" => {
 				if mnemonic == "D-M" {comp_bits.a = 1;}
-				comp_bits.c1 = 1;
-				comp_bits.c2 = 0;
-				comp_bits.c3 = 1;
+				comp_bits.c1 = 0;
+				comp_bits.c2 = 1;
+				comp_bits.c3 = 0;
 				comp_bits.c4 = 0;
 				comp_bits.c5 = 1;
-				comp_bits.c6 = 0;
+				comp_bits.c6 = 1;
 			},
 			"A-D" | "M-D" => {
 				if mnemonic == "M-D" {comp_bits.a = 1;}
-				comp_bits.c1 = 1;
+				comp_bits.c1 = 0;
 				comp_bits.c2 = 0;
-				comp_bits.c3 = 1;
-				comp_bits.c4 = 0;
+				comp_bits.c3 = 0;
+				comp_bits.c4 = 1;
 				comp_bits.c5 = 1;
-				comp_bits.c6 = 0;
+				comp_bits.c6 = 1;
 			},
 			"D&A" | "D&M" => {
 				if mnemonic == "D&M" {comp_bits.a = 1;}
-				comp_bits.c1 = 1;
+				comp_bits.c1 = 0;
 				comp_bits.c2 = 0;
-				comp_bits.c3 = 1;
+				comp_bits.c3 = 0;
 				comp_bits.c4 = 0;
-				comp_bits.c5 = 1;
+				comp_bits.c5 = 0;
 				comp_bits.c6 = 0;
 			},
 			"D|A" | "D|M" => {
 				if mnemonic == "D|M" {comp_bits.a = 1;}
-				comp_bits.c1 = 1;
-				comp_bits.c2 = 0;
-				comp_bits.c3 = 1;
-				comp_bits.c4 = 0;
-				comp_bits.c5 = 1;
-				comp_bits.c6 = 0;
+				comp_bits.c1 = 0;
+				comp_bits.c2 = 1;
+				comp_bits.c3 = 0;
+				comp_bits.c4 = 1;
+				comp_bits.c5 = 0;
+				comp_bits.c6 = 1;
 			},
 			_ => {},
 		}
