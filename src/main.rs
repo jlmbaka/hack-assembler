@@ -585,6 +585,39 @@ impl fmt::Display for Jump {
 	}
 }
 
+/// Keeps a correspondance between symbolic label and numeric addresses.
+///
+/// Hack instructions can contain symbols that each must be resolved into
+/// actual addresses as part of the translation process.
+struct SymbolTable {
+	symbol_table: HashMap<String, u16>,
+}
+
+impl<'a> SymbolTable {
+	/// Creates a new empty symbol table
+	fn new() -> SymbolTable {
+		SymbolTable {
+			symbol_table: HashMap::new(),
+		}
+	}
+
+	/// Adds the pair (symbol, address) to the table
+	fn add_entry(&mut self, symbol: String, address: u16) {
+		self.symbol_table.insert(symbol, address);
+	}
+
+	/// Determines whether the symbol table contain the given symbol
+	fn contains(&self, symbol: String) -> bool {
+		self.symbol_table.contains_key(&symbol)
+	}
+
+	/// Returns teh address associated with the `symbol`.
+	fn get_address(&self, symbol: String) -> u16 {
+		let tmp = self.symbol_table.get(&symbol).unwrap();
+		tmp.clone()
+	}
+}
+
 fn main() {
 	let args: Vec<String> = env::args().collect();
 	if args.len() != 2 {
