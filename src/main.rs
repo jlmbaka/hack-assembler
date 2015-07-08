@@ -1,9 +1,10 @@
 use std::path::Path;
 use std::fs::File;
+use std::io::prelude::*;
+use std::fs::OpenOptions;
 use std::error::Error;
 use std::env;
 use std::io::BufReader;
-use std::io::BufRead;
 use std::io::Lines;
 use std::collections::HashMap;
 use std::fmt;
@@ -29,6 +30,33 @@ impl Assembler {
 		}
 	}
 
+	/// Open a file
+	///
+	/// returns the opened has been opened
+	fn open_file(filename: &str) -> File{
+		let path = Path::new(filename);
+		let display = path.display();
+
+		let mut file = match OpenOptions::new()
+		.read(true)
+		.write(true)
+		.create(true)
+		.open(&path) {
+			Err(why) => panic!("Error on file {}: {}", display, Error::description(&why)),
+			Ok(file) => file,		
+		};
+
+		file
+	}
+
+	/// Write to file
+	fn write_to_file(mut file: &File, content: u16) {		
+		match file.write_fmt(format_args!("{:016b}\n", content)) {
+			Err(why) => panic!("couldn't write to file: {}", Error::description(&why)),
+			Ok(_) => println!("successfully wrote to file"),
+		}
+	}
+
 	/// Puts everything in motion.
 	/// Contains the main program logc
 	///
@@ -36,7 +64,11 @@ impl Assembler {
 	///
 	///		Are there any more commands in the input?
 	///			Reads the next command from the input and makes it the current command
-	fn parse(&mut self) {
+	fn run(&mut self) {
+
+		// Binary code file where the translated assembly will be written to. 
+		let output_file = Assembler::open_file("06/add/Add.hack");  // closed when binding goes out of scope.
+
 		loop {
 			match self.parser.input_lines.next() { 
 				Some(line) => { // has_more_command.true
@@ -64,17 +96,24 @@ impl Assembler {
 					match self.parser.command_type() {
 						ACommand => {
 							println!("ACommand: {0}", self.parser.current_command);
-							println!("\tsymbol: {0}", self.parser.symbol());
+							let a_cmd_sym = self.parser.symbol();
+							Assembler::write_to_file(&output_file, a_cmd_sym.parse::<u16>().unwrap());
 						},
 						CCommand => {
 							println!("CCommand: {0}", self.parser.current_command);
 							println!("\tdest: {0}", self.parser.dest());
 							println!("\tcomp: {0}", self.parser.comp());
 							println!("\tjump: {0}", self.parser.jump());
+
+							// let dest = self.code.dest(self.parser.dest());
+							// let comp = self.code.comp(self.parser.comp());
+							// let jump = self.code.jump(self.parser.jump());
 						},
 						LCommand => {
 							println!("LCommand: {0}", self.parser.current_command);
-							println!("\tsymbol: {0}", self.parser.symbol());
+							let l_cmd_sym = self.parser.symbol();
+							Assembler::write_to_file(&output_file, l_cmd_sym.parse::<u16>().unwrap());
+
 						},
 					}
 				},
@@ -529,5 +568,5 @@ fn main() {
 	}
 	let path_to_asm_file = &args[1];
 	let mut assembler = Assembler::new(path_to_asm_file);
-	assembler.parse();
+	assembler.run();
 }
