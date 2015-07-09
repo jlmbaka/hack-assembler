@@ -17,17 +17,40 @@ use CommandType::{ACommand, CCommand, LCommand};
 ///		* Parser
 ///		* Code module
 /// 	* Symbol table
+///
+/// Two-pass assembler that reads the code twice from start to end.
+///
+/// * First pass:
+/// build the symbol table and generates no code.
+////
+/// * Second pass:
+/// all the label symbols encountered in the program have already
+/// been bound to memory locations and recorded in the symbol table. Thus the 
+/// assembler can replace each symbol with its corresponding meaning (numeric addr)
+/// and generate the final binary code.
 struct Assembler {
 	parser: Parser,
 	input_filename: String,
+	symbol_table: SymbolTable,
 }
 
 impl Assembler {
 	fn new(filename: &str) -> Assembler {
 		Assembler {
 			parser: Parser::new(filename),
-			input_filename: filename.to_string(), 
+			input_filename: filename.to_string(),
+			symbol_table: SymbolTable::new(),
 		}
+	}
+
+
+	/// Put together all the steps of the translation process.
+	///
+	/// Inialise Symbol Table -> First Pass -> Second Pass
+	fn run(&mut self)  {
+		self.symbol_table.initialise();
+		self.first_pass();
+		self.second_pass();
 	}
 
 	/// Open a file
@@ -45,13 +68,12 @@ impl Assembler {
 			Err(why) => panic!("Error on file {}: {}", display, Error::description(&why)),
 			Ok(file) => file,		
 		};
-
 		file
 	}
 
 	/// Write to file
-	fn write_to_file(mut file: &File, content: u16) {		
-		match file.write_fmt(format_args!("{:016b}\n", content)) {
+	fn write_to_file(mut file: &File, code: u16) {		
+		match file.write_fmt(format_args!("{:016b}\n", code)) {
 			Err(why) => panic!("couldn't write to file: {}", Error::description(&why)),
 			Ok(_) => println!("successfully wrote to file"),
 		}
@@ -64,6 +86,67 @@ impl Assembler {
 		output_filename
 	}
 
+	/// Go through the entire assembly program, line by line, and build the symbol table.
+	///
+	/// Doesn't generate any code.
+	fn first_pass(&mut self) {
+		let mut rom_address: isize = -1;
+		loop {
+			match self.parser.input_lines.next() {
+				Some(line) => {
+					let content = line.unwrap().trim().to_string();
+
+					// ignore line comments and empty lines
+					if content.starts_with("//") || content == "\n" || content == "" {
+						continue
+					}
+
+					// remove inline commnents
+					let mut content_without_inline = String::new();
+					if content.contains("//") {
+						let v: Vec<&str> = content.split("//").collect();
+						content_without_inline = v[0].trim().to_string();
+					}
+
+					// decide whether to use content_with_inline or content
+					if content_without_inline != String::new() {
+						self.parser.current_command = content_without_inline;
+					} else {
+						self.parser.current_command = content;
+					}
+
+					match self.parser.command_type() {
+						ACommand => {
+							rom_address += 1;
+
+							// let a_cmd_sym = self.parser.symbol();
+							// Assembler::write_to_file(&output_file, a_cmd_sym.parse::<u16>().unwrap());
+						},
+						CCommand => {
+							rom_address += 1;
+
+							// let dest = Code::dest(&self.parser.dest());
+							// let comp = Code::comp(&self.parser.comp());
+							// let jump = Code::jump(&self.parser.jump());
+
+							// let c_instr = "111".to_string() + &(comp.to_string()) + &(dest.to_string()) + &(jump.to_string());
+							// Assembler::write_to_file(&output_file, u16::from_str_radix(&c_instr, 2).unwrap());
+						},
+						LCommand => {
+							let l_cmd_sym = self.parser.symbol();
+							// Assembler::write_to_file(&output_file, l_cmd_sym.parse::<u16>().unwrap());
+
+							let next_instr_rom_address = (rom_address + 1) as u16;
+							println!("({0}, {1})", l_cmd_sym.clone(), next_instr_rom_address.clone());
+							self.symbol_table.add_entry(l_cmd_sym, next_instr_rom_address);
+						},
+					}
+				},
+				None => break,
+			}
+		}
+	}
+
 	/// Puts everything in motion.
 	/// Contains the main program logc
 	///
@@ -71,7 +154,9 @@ impl Assembler {
 	///
 	///		Are there any more commands in the input?
 	///			Reads the next command from the input and makes it the current command
-	fn run(&mut self) {
+	fn second_pass(&mut self) {
+		// get a new parser
+		self.parser = Parser::new(&self.input_filename);
 
 		// file where the translated assembly will be written to. 
 		let output_filename = self.generate_output_filename();
@@ -106,8 +191,28 @@ impl Assembler {
 					match self.parser.command_type() {
 						ACommand => {
 							println!("ACommand: {0}", self.parser.current_command);
+
 							let a_cmd_sym = self.parser.symbol();
-							Assembler::write_to_file(&output_file, a_cmd_sym.parse::<u16>().unwrap());
+
+							match a_cmd_sym.parse::<u16>() {
+								Ok(address) => Assembler::write_to_file(&output_file, address),
+								Err(_) => {
+									match self.symbol_table.contains(&a_cmd_sym) {
+										true => {
+											let address = self.symbol_table.get_address(&a_cmd_sym);
+											Assembler::write_to_file(&output_file, address);
+										},
+										false => {
+											let address = match self.symbol_table.table.values().max() {
+												Some(value) => value + 1, // insert a the next available RAM addr
+												None => 0u16,
+											};
+											self.symbol_table.add_entry(a_cmd_sym.clone(), address);
+											Assembler::write_to_file(&output_file, address);
+										},
+									}
+								}
+							}
 						},
 						CCommand => {
 							println!("CCommand: {0}", self.parser.current_command);
@@ -124,13 +229,12 @@ impl Assembler {
 						},
 						LCommand => {
 							println!("LCommand: {0}", self.parser.current_command);
-							let l_cmd_sym = self.parser.symbol();
-							Assembler::write_to_file(&output_file, l_cmd_sym.parse::<u16>().unwrap());
-
+							// let l_cmd_sym = self.parser.symbol();
+							// Assembler::write_to_file(&output_file, l_cmd_sym.parse::<u16>().unwrap());
 						},
 					}
 				},
-				None => break, // has_more_command.false
+				None => break,
 			}
 		}
 	}
@@ -330,8 +434,8 @@ impl Code {
 				comp_bits.c5 = 0;
 				comp_bits.c6 = 0;
 			},
-			"A" | "!M" => {
-				if mnemonic == "!M" {comp_bits.a = 1;}
+			"A" | "M" => {
+				if mnemonic == "M" {comp_bits.a = 1;}
 				comp_bits.c1 = 1;
 				comp_bits.c2 = 1;
 				comp_bits.c3 = 0;
@@ -347,7 +451,8 @@ impl Code {
 				comp_bits.c5 = 0;
 				comp_bits.c6 = 1;
 			},
-			"!A" => {
+			"!A" | "!M" => {
+				if mnemonic == "M" {comp_bits.a = 1;}
 				comp_bits.c1 = 1;
 				comp_bits.c2 = 1;
 				comp_bits.c3 = 0;
@@ -590,30 +695,44 @@ impl fmt::Display for Jump {
 /// Hack instructions can contain symbols that each must be resolved into
 /// actual addresses as part of the translation process.
 struct SymbolTable {
-	symbol_table: HashMap<String, u16>,
+	table: HashMap<String, u16>,
 }
 
-impl<'a> SymbolTable {
+impl SymbolTable {
 	/// Creates a new empty symbol table
 	fn new() -> SymbolTable {
 		SymbolTable {
-			symbol_table: HashMap::new(),
+			table: HashMap::new(),
 		}
+	}
+
+	/// Initialise the symbol table with predefined symbols.
+	fn initialise(&mut self) {
+		self.table.insert("SP".to_string(), 0);
+		self.table.insert("LCL".to_string(), 1);
+		self.table.insert("ARG".to_string(), 2);
+		self.table.insert("THIS".to_string(), 3);
+		self.table.insert("THAT".to_string(), 4);
+		for i in 0..15 {
+			self.table.insert(format!("R{}", i).to_string(), i);
+		}
+		self.table.insert("SCREEN".to_string(), 16384);
+		self.table.insert("KBD".to_string(), 24576);
 	}
 
 	/// Adds the pair (symbol, address) to the table
 	fn add_entry(&mut self, symbol: String, address: u16) {
-		self.symbol_table.insert(symbol, address);
+		self.table.insert(symbol, address);
 	}
 
 	/// Determines whether the symbol table contain the given symbol
-	fn contains(&self, symbol: String) -> bool {
-		self.symbol_table.contains_key(&symbol)
+	fn contains(&self, symbol: &str) -> bool {
+		self.table.contains_key(symbol)
 	}
 
-	/// Returns teh address associated with the `symbol`.
-	fn get_address(&self, symbol: String) -> u16 {
-		let tmp = self.symbol_table.get(&symbol).unwrap();
+	/// Returns the address associated with the `symbol`.
+	fn get_address(&self, symbol: &str) -> u16 {
+		let tmp = self.table.get(symbol).unwrap();
 		tmp.clone()
 	}
 }
