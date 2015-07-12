@@ -1,4 +1,4 @@
 [package]
-name = "assembler"
+name = "hack"
 version = "0.1.0"
 authors = ["Jean-Louis Mbaka <jeanlouis.mbaka@gmail.com>"]
