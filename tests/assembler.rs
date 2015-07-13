@@ -6,18 +6,32 @@ use std::error::Error;
 use std::fs::OpenOptions;
 use std::io::prelude::*;
 
+// /// FEATURE
+// /// As a user,
+// /// I want to be able to translate assembly that does not contain symbols to binary code.
+// #[test]
+// fn translate_asm_file_to_hack_no_symbols() {
+// 	let filenames_no_symbol: Vec<&str> = vec!["Add", "MaxL", "RectL", "PongL"];
+// 	generic_asm_to_hack(filenames_no_symbol);
+// }
+
 /// FEATURE
 /// As a user,
-/// I want to be able to translate assembly that does not contain symbols to binary code.
+/// I want to be able to translate assembly that contains symbols to binary code.
 #[test]
-fn translate_asm_file_to_hack_no_symbols() {
+fn translate_asm_file_to_hack_symbols() {
+	let filenames_with_symbol: Vec<&str> = vec!["Rect", "Max", "Pong"];
+	generic_asm_to_hack(filenames_with_symbol);
+}
+
+fn generic_asm_to_hack(filenames_no_symbol: Vec<&str>) {
 	let dir = "06/";
 	let in_ext = ".asm";
 	let out_ext = ".hack";
 	let expected_dir = "expected/";
 
 	// GIVEN I am a user
-	let filenames_no_symbol: Vec<&str> = vec!["Add", "MaxL", "RectL", "PongL"];
+	// let filenames_no_symbol: Vec<&str> = vec!["Add", "MaxL", "RectL", "PongL"];
 	for filename in &filenames_no_symbol {
 		// WHEN I run the assembler with a file argument "{0}.asm"
 		let f_in = dir.to_string() + filename + in_ext;
@@ -33,31 +47,9 @@ fn translate_asm_file_to_hack_no_symbols() {
 
 		assert_eq!(actual, expected);
 
-		// clean_up(f_out);
+		// clean_up(&f_out);
 	}
-
-	// let mut assembler = Assembler::new(filename);
-	// assembler.translate();
-	// Then I will get an output file named "{0}.hack" containing the correct binary code of the given input file.
-	// let actual = load_file_content("06//add//Add.hack");
-	// let expected = load_file_content("06//add//AddExpected.hack");
-	// let actual_lines: Vec<&str> = actual.lines().collect();
-	// let expected_lines: Vec<&str> = expected.lines().collect();
-	// assert_eq!(actual, expected);
-	// clean_up("06//add//Add.hack");
 }
-
-
-// /// FEATURE
-// /// As a user,
-// /// I want to be able to translate assembly that contains symbols to binary code.
-// #[test]
-// fn translate_asm_file_to_hack_symbols() {
-// 	// Given I am a user
-// 	// When I run the assembler with a file argument "{0}.asm"
-// 	let filenames_symbol: Vec<&str> = ["Max", "Pong", "Rect"];
-// 	// Then I will get an output file named "{0}.hack" containing the correct binary code of the given input file.
-// }
 
 fn load_file_content(filename: &str) -> String {
 	let path = Path::new(filename);

@@ -77,7 +77,7 @@ impl Assembler {
 	fn write_to_file(mut file: &File, code: u16) {		
 		match file.write_fmt(format_args!("{:016b}\n", code)) {
 			Err(why) => panic!("couldn't write to file: {}", Error::description(&why)),
-			Ok(_) => println!("successfully wrote to file"),
+			Ok(_) => println!("successfully wrote to file\n"),
 		}
 	}
 
@@ -110,7 +110,7 @@ impl Assembler {
 						content_without_inline = v[0].trim().to_string();
 					}
 
-					// decide whether to use content_with_inline or content
+					// decide whether to use content_without_inline or content
 					if content_without_inline != String::new() {
 						self.parser.current_command = content_without_inline;
 					} else {
@@ -118,26 +118,11 @@ impl Assembler {
 					}
 
 					match self.parser.command_type() {
-						CommandType::ACommand => {
+						CommandType::ACommand | CommandType::CCommand => {
 							rom_address += 1;
-
-							// let a_cmd_sym = self.parser.symbol();
-							// Assembler::write_to_file(&output_file, a_cmd_sym.parse::<u16>().unwrap());
-						},
-						CommandType::CCommand => {
-							rom_address += 1;
-
-							// let dest = Code::dest(&self.parser.dest());
-							// let comp = Code::comp(&self.parser.comp());
-							// let jump = Code::jump(&self.parser.jump());
-
-							// let c_instr = "111".to_string() + &(comp.to_string()) + &(dest.to_string()) + &(jump.to_string());
-							// Assembler::write_to_file(&output_file, u16::from_str_radix(&c_instr, 2).unwrap());
 						},
 						CommandType::LCommand => {
 							let l_cmd_sym = self.parser.symbol();
-							// Assembler::write_to_file(&output_file, l_cmd_sym.parse::<u16>().unwrap());
-
 							let next_instr_rom_address = (rom_address + 1) as u16;
 							println!("({0}, {1})", l_cmd_sym.clone(), next_instr_rom_address.clone());
 							self.symbol_table.add_entry(l_cmd_sym, next_instr_rom_address);
@@ -192,22 +177,38 @@ impl Assembler {
 						CommandType::ACommand => {
 							println!("CommandType::ACommand: {0}", self.parser.current_command);
 
-							let a_cmd_sym = self.parser.symbol();
+							let a_cmd_symbol = self.parser.symbol();
 
-							match a_cmd_sym.parse::<u16>() {
+							match a_cmd_symbol.parse::<u16>() {
 								Ok(address) => Assembler::write_to_file(&output_file, address),
-								Err(_) => {
-									match self.symbol_table.contains(&a_cmd_sym) {
-										true => {
-											let address = self.symbol_table.get_address(&a_cmd_sym);
+								Err(_) => { // symbol aka @symbol
+									match self.symbol_table.contains(&a_cmd_symbol) {
+										true => { // found the symbol in the table
+											let address = self.symbol_table.get_address(&a_cmd_symbol);
 											Assembler::write_to_file(&output_file, address);
 										},
-										false => {
-											let address = match self.symbol_table.table.values().max() {
-												Some(value) => value + 1, // insert a the next available RAM addr
-												None => 0u16,
-											};
-											self.symbol_table.add_entry(a_cmd_sym.clone(), address);
+										false => { // couldn't find the symbol in the table. Find the next available addr.
+											let mut address = 0u16;
+											let mut prev_addr = 0;
+
+											{
+												let mut values: Vec<&u16> = self.symbol_table.table.values().collect::<Vec<&u16>>();
+												values.sort();
+
+												for curr_addr in values {
+													println!("value: {}", curr_addr);
+													if curr_addr - prev_addr <= 1 {
+														prev_addr = *curr_addr;
+													} else {
+														address = prev_addr + 1;
+														break
+													}
+												}
+											}	
+											
+											println!("\tNEXT AVAILABLE ADDR: {0}", &address);
+											println!("\tSYMBOL: {0}", a_cmd_symbol.clone());
+											self.symbol_table.add_entry(a_cmd_symbol, address);
 											Assembler::write_to_file(&output_file, address);
 										},
 									}
@@ -223,12 +224,12 @@ impl Assembler {
 
 							let c_instr = "111".to_string() + &(comp.to_string()) + &(dest.to_string()) + &(jump.to_string());
 
-							println!("{} {} {} {}", "0b111", dest.to_string(), comp.to_string(), jump.to_string());
+							// println!("{} {} {} {}", "0b111", dest.to_string(), comp.to_string(), jump.to_string());
 
 							Assembler::write_to_file(&output_file, u16::from_str_radix(&c_instr, 2).unwrap());
 						},
 						CommandType::LCommand => {
-							println!("CommandType::LCommand: {0}", self.parser.current_command);
+							// println!("CommandType::LCommand: {0}", self.parser.current_command);
 							// let l_cmd_sym = self.parser.symbol();
 							// Assembler::write_to_file(&output_file, l_cmd_sym.parse::<u16>().unwrap());
 						},
@@ -707,7 +708,7 @@ impl SymbolTable {
 		self.table.insert("ARG".to_string(), 2);
 		self.table.insert("THIS".to_string(), 3);
 		self.table.insert("THAT".to_string(), 4);
-		for i in 0..15 {
+		for i in 0..16 {
 			self.table.insert(format!("R{}", i).to_string(), i);
 		}
 		self.table.insert("SCREEN".to_string(), 16384);
