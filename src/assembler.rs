@@ -51,7 +51,9 @@ impl Assembler {
 	/// Inialise Symbol Table -> First Pass -> Second Pass
 	pub fn translate(&mut self)  {
 		self.symbol_table.initialise();
+		println!("----------------- FIRST PASS ----------------");
 		self.first_pass();
+		println!("----------------- SECOND PASS ----------------");
 		self.second_pass();
 	}
 
@@ -77,7 +79,7 @@ impl Assembler {
 	fn write_to_file(mut file: &File, code: u16) {		
 		match file.write_fmt(format_args!("{:016b}\n", code)) {
 			Err(why) => panic!("couldn't write to file: {}", Error::description(&why)),
-			Ok(_) => println!("successfully wrote to file\n"),
+			Ok(_) => (),
 		}
 	}
 
@@ -149,6 +151,9 @@ impl Assembler {
  		// closed when binding goes out of scope.
 		let output_file = Assembler::open_file(&output_filename); 
 
+		// user variable addr
+		let mut user_defined_var_addr: u16 = 16;
+
 		loop {
 			match self.parser.input_lines.next() { 
 				Some(line) => { // has_more_command.true
@@ -188,28 +193,9 @@ impl Assembler {
 											Assembler::write_to_file(&output_file, address);
 										},
 										false => { // couldn't find the symbol in the table. Find the next available addr.
-											let mut address = 0u16;
-											let mut prev_addr = 0;
-
-											{
-												let mut values: Vec<&u16> = self.symbol_table.table.values().collect::<Vec<&u16>>();
-												values.sort();
-
-												for curr_addr in values {
-													println!("value: {}", curr_addr);
-													if curr_addr - prev_addr <= 1 {
-														prev_addr = *curr_addr;
-													} else {
-														address = prev_addr + 1;
-														break
-													}
-												}
-											}	
-											
-											println!("\tNEXT AVAILABLE ADDR: {0}", &address);
-											println!("\tSYMBOL: {0}", a_cmd_symbol.clone());
-											self.symbol_table.add_entry(a_cmd_symbol, address);
-											Assembler::write_to_file(&output_file, address);
+											self.symbol_table.add_entry(a_cmd_symbol, user_defined_var_addr);
+											Assembler::write_to_file(&output_file, user_defined_var_addr);
+											user_defined_var_addr += 1;
 										},
 									}
 								}
@@ -224,15 +210,9 @@ impl Assembler {
 
 							let c_instr = "111".to_string() + &(comp.to_string()) + &(dest.to_string()) + &(jump.to_string());
 
-							// println!("{} {} {} {}", "0b111", dest.to_string(), comp.to_string(), jump.to_string());
-
 							Assembler::write_to_file(&output_file, u16::from_str_radix(&c_instr, 2).unwrap());
 						},
-						CommandType::LCommand => {
-							// println!("CommandType::LCommand: {0}", self.parser.current_command);
-							// let l_cmd_sym = self.parser.symbol();
-							// Assembler::write_to_file(&output_file, l_cmd_sym.parse::<u16>().unwrap());
-						},
+						CommandType::LCommand => {},
 					}
 				},
 				None => break,

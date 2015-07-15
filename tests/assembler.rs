@@ -6,21 +6,21 @@ use std::error::Error;
 use std::fs::OpenOptions;
 use std::io::prelude::*;
 
-// /// FEATURE
-// /// As a user,
-// /// I want to be able to translate assembly that does not contain symbols to binary code.
-// #[test]
-// fn translate_asm_file_to_hack_no_symbols() {
-// 	let filenames_no_symbol: Vec<&str> = vec!["Add", "MaxL", "RectL", "PongL"];
-// 	generic_asm_to_hack(filenames_no_symbol);
-// }
+/// FEATURE
+/// As a user,
+/// I want to be able to translate assembly that does not contain symbols to binary code.
+#[test]
+fn translate_asm_file_to_hack_no_symbols() {
+	let filenames_no_symbol: Vec<&str> = vec!["Add", "MaxL", "RectL", "PongL"];
+	generic_asm_to_hack(filenames_no_symbol);
+}
 
 /// FEATURE
 /// As a user,
 /// I want to be able to translate assembly that contains symbols to binary code.
 #[test]
 fn translate_asm_file_to_hack_symbols() {
-	let filenames_with_symbol: Vec<&str> = vec!["Rect", "Max", "Pong"];
+	let filenames_with_symbol: Vec<&str> = vec!["Pong"];
 	generic_asm_to_hack(filenames_with_symbol);
 }
 
@@ -47,7 +47,7 @@ fn generic_asm_to_hack(filenames_no_symbol: Vec<&str>) {
 
 		assert_eq!(actual, expected);
 
-		// clean_up(&f_out);
+		clean_up(&f_out);
 	}
 }
 
