@@ -1,5 +1,10 @@
 # hack-assembler
-Hack Assembler. Translates Hack Assembly (mnemonics) into Binary machine code for the Hack Platform.
+
+A simple assembler for the Hack Platform written in Rust.
+
+I have implemented this assembler based on the book *The Elements of Computing Systems* by Noam Nisam and Shimon Schocken.
+
+It translates Hack Assembly (mnemonics) into Binary machine code for the Hack computer.
 
 ## What is it?
 
