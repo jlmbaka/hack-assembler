@@ -1,6 +1,6 @@
 # hack-assembler
 
-A simple assembler for the Hack Platform written in Rust.
+A simple assembler for the Hack Platform, written in Rust.
 
 I have implemented this assembler based on the book *The Elements of Computing Systems* by Noam Nisam and Shimon Schocken.
 
@@ -15,7 +15,7 @@ The Hack computer is a Von Neumann platform. It is a 16-bit machine, consisting 
 
 ## Documentation
 
-The Hack computer platform is fully documented in the book *The Elements of Computing Systems* by Noam Nisam and Shimon Schocken and its companion [website](http://www.nand2tetris.org) that contains ressources for the associated course, projects and supporting software. The goal of the authors is to guide the reader through the construction of a computer from the ground up, going from boolean principles to a fully functional Tetris game.
+The Hack computer platform is fully documented in the book *The Elements of Computing Systems* by Noam Nisam and Shimon Schocken and its companion [website](http://www.nand2tetris.org) that contains resources for the associated course, projects and supporting software. The goal of the authors is to guide the reader through the construction of a computer from the ground up, going from Boolean principles to a fully functional Tetris game.
 
 ## Installation
 
@@ -23,12 +23,12 @@ Since the program is provided as source, you will need to compile it to your tar
 
 ## Usage
 
-The Hack assembler reads as input a text file named `<name_of_prog>.asm` containing a Hack assembly program, and outpus a text file named `<name_of_prog>.hack`, containing the translated Hack machine code.
+The Hack assembler reads as input a text file named `<name_of_prog>.asm` containing a Hack assembly program, and outputs a text file named `<name_of_prog>.hack`, containing the translated Hack machine code.
 
 The input file is supplied to the assembler program as a command line argument
 
 ```
-prompt> assember [PATH_TO_ASM_FILE]
+prompt> assembler [PATH_TO_ASM_FILE]
 
 ```
 
